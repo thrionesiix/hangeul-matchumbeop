@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강사용 대시보드 · 한글맞춤법 복습시험</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#0a0e0a; --bg-card:#111a11; --bg-input:#101a10;
+  --border-row:rgba(255,255,255,.35); --border-outer:rgba(255,255,255,.35);
+  --green-brand:#4a5a3a; --green-accent:#6b8f5e; --green-light:#8aad7a; --green-bright:#4ade80;
+  --gold:#c9a84c; --gold-dim:#a08838;
+  --text-primary:#ece8e0; --text-secondary:#c4bfb4; --text-muted:#928d82; --text-dim:#7a7568;
+  --correct:#22c55e; --wrong:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg-deep);color:var(--text-primary);
+  font-family:'Noto Sans KR',system-ui,sans-serif;word-break:keep-all;line-height:1.6}
+h1,h2,h3{font-family:'Noto Serif KR',serif;margin:0}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px 70px}
+header{border-bottom:1px solid var(--border-row);background:rgba(10,14,10,.96);position:sticky;top:0;z-index:20}
+.hbar{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hbar .t{flex:1;min-width:180px}
+.hbar h1{font-size:18px}
+.hbar small{color:var(--text-muted);font-size:12px}
+.btn{padding:10px 18px;border-radius:10px;border:1px solid var(--green-accent);
+  background:var(--green-brand);color:var(--text-primary);font-size:14px}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.25);color:var(--text-secondary)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.card{background:linear-gradient(180deg,#151f15,#0e160e);border:1px solid var(--border-outer);
+  border-radius:14px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.card small{display:block;color:var(--text-muted);font-size:12px;margin-bottom:6px}
+.card b{font-family:'Noto Serif KR',serif;font-size:26px;color:var(--gold);line-height:1.2}
+.card b.sm{font-size:17px;color:var(--text-primary)}
+.panel{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:14px;padding:18px;margin-bottom:16px}
+.panel h3{font-size:15px;color:var(--gold);margin-bottom:4px}
+.panel .sub{color:var(--text-muted);font-size:12px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:11px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.14)}
+th{color:var(--text-muted);font-size:12px;font-weight:500}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:rgba(255,255,255,.04)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.grade{display:inline-block;min-width:26px;text-align:center;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700}
+.gA{background:rgba(34,197,94,.18);color:#86efac}
+.gB{background:rgba(107,143,94,.25);color:#c6e0b8}
+.gC{background:rgba(201,168,76,.18);color:#e8d08a}
+.gD{background:rgba(239,68,68,.14);color:#fca5a5}
+.gF{background:rgba(239,68,68,.22);color:#fecaca}
+.bar{display:grid;grid-template-columns:86px 1fr 92px;gap:10px;align-items:center;font-size:13px;padding:7px 0}
+.track{height:10px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--green-bright))}
+.fill.low{background:linear-gradient(90deg,#b45309,#ef4444)}
+.wrongs{display:flex;flex-wrap:wrap;gap:8px}
+.wchip{padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.03);font-size:13px}
+.wchip b{color:var(--wrong);margin-left:6px}
+.empty{color:var(--text-dim);font-size:13px;padding:14px 0}
+#setup{padding:22px;border:1px dashed rgba(255,255,255,.25);border-radius:14px;margin:20px 0;font-size:13px;color:var(--text-secondary)}
+#setup input{width:100%;margin-top:10px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);
+  background:var(--bg-input);color:var(--text-primary);font-size:14px;font-family:inherit}
+#modal{position:fixed;inset:0;background:rgba(5,8,5,.86);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+#modal.on{display:flex}
+.mbox{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:16px;padding:22px;
+  max-width:560px;width:100%;max-height:82vh;overflow:auto}
+.mbox h2{font-size:20px;color:var(--gold);margin-bottom:4px}
+.mbox .meta{color:var(--text-muted);font-size:12px;margin-bottom:16px}
+.notice{margin-top:24px;padding:14px;border:1px solid rgba(239,68,68,.35);border-radius:12px;
+  background:rgba(239,68,68,.05);font-size:12px;color:var(--text-muted)}
+.notice b{color:#fca5a5}
+@media (max-width:820px){ .cards{grid-template-columns:1fr 1fr} }
+@media (max-width:560px){ .bar{grid-template-columns:70px 1fr 72px} th.hide,td.hide{display:none} }
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="t">
+      <h1>강사용 대시보드</h1>
+      <small>비상(박) 한글맞춤법 복습시험 · [오름] 국어</small>
+    </div>
+    <button class="btn ghost" id="cfgBtn">연동 설정</button>
+    <button class="btn" id="refresh">↻ 새로고침</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="setup" style="display:none">
+    <b>Apps Script 웹 앱 URL</b>을 입력하면 학생 제출 데이터를 불러옵니다. (이 브라우저에만 저장됩니다.)
+    <input id="url" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+    <div style="margin-top:10px;display:flex;gap:8px"><button class="btn" id="saveUrl">저장하고 불러오기</button></div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><small>응시 학생</small><b id="cStu">-</b></div>
+    <div class="card"><small>평균 정답률</small><b id="cAvg">-</b></div>
+    <div class="card"><small>80% 이상 비율</small><b id="cHigh">-</b></div>
+    <div class="card"><small>가장 어려운 조항</small><b class="sm" id="cHard">-</b></div>
+  </div>
+
+  <div class="panel">
+    <h3>학생별 순위</h3>
+    <p class="sub">행을 누르면 그 학생의 조항별 결과와 오답을 볼 수 있습니다. (같은 학생이 여러 번 응시하면 가장 최근 회차 기준)</p>
+    <table>
+      <thead><tr><th>순위</th><th>이름</th><th class="num">문항</th><th class="num">정답</th><th class="num">정답률</th><th>등급</th><th class="hide">최근 응시</th></tr></thead>
+      <tbody id="rank"></tbody>
+    </table>
+    <div class="empty" id="rankEmpty">아직 제출된 결과가 없습니다.</div>
+  </div>
+
+  <div class="panel">
+    <h3>조항별 정답률</h3>
+    <p class="sub">정답률이 낮은 조항일수록 위에 표시됩니다. 60% 미만은 붉은색입니다.</p>
+    <div id="hangs"></div>
+    <div class="empty" id="hangEmpty">데이터가 없습니다.</div>
+  </div>
+
+  <div class="panel">
+    <h3>빈출 오답</h3>
+    <p class="sub">학생들이 가장 많이 틀린 표기입니다. 괄호 안 숫자는 틀린 횟수입니다.</p>
+    <div class="wrongs" id="wrongs"></div>
+    <div class="empty" id="wrongEmpty">데이터가 없습니다.</div>
+  </div>
+
+  <div class="notice">
+    본 대시보드 주소는 <b>학생에게 공유하지 마세요.</b> 학생 성적과 오답 정보가 그대로 표시됩니다.
+  </div>
+</div>
+
+<div id="modal"><div class="mbox">
+  <h2 id="mName"></h2>
+  <div class="meta" id="mMeta"></div>
+  <div id="mBody"></div>
+  <div style="margin-top:18px;text-align:right"><button class="btn ghost" id="mClose">닫기</button></div>
+</div></div>
+
+<script>
+const $ = s=>document.querySelector(s);
+const KEY = "vs_matchum_dash_url";
+const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbz2Yoo6mtJmSFcuxOHnzPCkpv3WkUI0QjK7bCytbi6GuJ2mepTCYZXxvflIH-xPZgO1tA/exec"; // 기본 연동 주소
+let ROWS = [];
+
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const grade = r => r>=90?"A":r>=80?"B":r>=70?"C":r>=60?"D":"F";
+
+function getUrl(){ try{ return localStorage.getItem(KEY)||DEFAULT_URL }catch(e){ return DEFAULT_URL } }
+function setUrl(v){ try{ localStorage.setItem(KEY,v) }catch(e){} }
+
+$("#cfgBtn").onclick = ()=>{ const s=$("#setup"); s.style.display = s.style.display==="none"?"block":"none"; $("#url").value = getUrl(); };
+$("#saveUrl").onclick = ()=>{ setUrl($("#url").value.trim()); $("#setup").style.display="none"; load(); };
+$("#refresh").onclick = load;
+$("#mClose").onclick = ()=>$("#modal").classList.remove("on");
+$("#modal").onclick = e=>{ if(e.target.id==="modal") $("#modal").classList.remove("on"); };
+
+async function load(){
+  const url = getUrl();
+  if(!url){ $("#setup").style.display="block"; $("#url").value=""; return; }
+  $("#refresh").textContent = "불러오는 중…";
+  try{
+    const res = await fetch(url + (url.includes("?")?"&":"?") + "mode=data&t=" + Date.now());
+    const json = await res.json();
+    ROWS = (json.rows||[]).filter(r=>r.name);
+    render();
+  }catch(e){
+    alert("데이터를 불러오지 못했습니다.\n· Apps Script 배포 설정에서 액세스가 ‘모든 사용자’인지\n· URL이 /exec 로 끝나는지 확인해 주세요.\n\n" + e);
+  }
+  $("#refresh").textContent = "↻ 새로고침";
+}
+
+function render(){
+  // 학생별: 가장 최근 응시 회차만 사용
+  const byStu = {};
+  ROWS.forEach(r=>{
+    const s = byStu[r.name] = byStu[r.name] || {name:r.name, nick:"", time:"", rows:[], total:0, correct:0};
+    if(r.nick) s.nick = r.nick;
+    if(String(r.work).indexOf("전체") === 0 || String(r.work).indexOf("【") === 0){
+      s.total = r.total; s.correct = r.correct; s.time = r.time;
+    } else {
+      s.rows.push(r);
+    }
+  });
+  const stus = Object.values(byStu).map(s=>{
+    if(!s.total){ s.total = s.rows.reduce((a,b)=>a+b.total,0); s.correct = s.rows.reduce((a,b)=>a+b.correct,0); }
+    if(!s.time && s.rows.length) s.time = s.rows[s.rows.length-1].time;
+    s.rate = s.total ? Math.round(s.correct/s.total*100) : 0;
+    return s;
+  }).sort((a,b)=>b.rate-a.rate || b.total-a.total);
+
+  // 요약 카드
+  const avg = stus.length ? Math.round(stus.reduce((a,b)=>a+b.rate,0)/stus.length) : 0;
+  const high = stus.length ? Math.round(stus.filter(s=>s.rate>=80).length/stus.length*100) : 0;
+  $("#cStu").textContent = stus.length ? stus.length+"명" : "-";
+  $("#cAvg").textContent = stus.length ? avg+"%" : "-";
+  $("#cHigh").textContent = stus.length ? high+"%" : "-";
+
+  // 조항별 집계
+  const byHang = {};
+  ROWS.forEach(r=>{
+    const h = String(r.work);
+    if(h.indexOf("전체")===0 || h.indexOf("【")===0 || !h) return;
+    byHang[h] = byHang[h] || {t:0,c:0};
+    byHang[h].t += r.total; byHang[h].c += r.correct;
+  });
+  const hangs = Object.entries(byHang).map(([h,v])=>({h, rate: v.t?Math.round(v.c/v.t*100):0, t:v.t, c:v.c}))
+    .sort((a,b)=>a.rate-b.rate);
+  $("#cHard").textContent = hangs.length ? hangs[0].h + " (" + hangs[0].rate + "%)" : "-";
+
+  // 순위표
+  const medal = i => i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);
+  $("#rank").innerHTML = stus.map((s,i)=>`
+    <tr data-n="${esc(s.name)}">
+      <td>${medal(i)}</td><td>${esc(s.name)}${s.nick?` <span style="color:var(--text-muted);font-size:12px">(${esc(s.nick)})</span>`:""}</td>
+      <td class="num">${s.total}</td><td class="num">${s.correct}</td>
+      <td class="num">${s.rate}%</td>
+      <td><span class="grade g${grade(s.rate)}">${grade(s.rate)}</span></td>
+      <td class="hide">${esc(s.time||"")}</td>
+    </tr>`).join("");
+  $("#rankEmpty").style.display = stus.length ? "none" : "block";
+  $("#rank").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>detail(byStu[tr.dataset.n]));
+
+  // 조항별 바
+  $("#hangs").innerHTML = hangs.map(x=>`
+    <div class="bar"><span>${esc(x.h)}</span>
+      <div class="track"><div class="fill ${x.rate<60?'low':''}" style="width:${x.rate}%"></div></div>
+      <span>${x.rate}% (${x.c}/${x.t})</span></div>`).join("");
+  $("#hangEmpty").style.display = hangs.length ? "none" : "block";
+
+  // 빈출 오답
+  const cnt = {};
+  ROWS.forEach(r=>{
+    const h = String(r.work);
+    if(h.indexOf("전체")===0 || h.indexOf("【")===0) return; // 요약 행 제외
+    String(r.wrongs||"").split(",").map(s=>s.trim()).filter(Boolean)
+      .forEach(w=>cnt[w]=(cnt[w]||0)+1);
+  });
+  const top = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,24);
+  $("#wrongs").innerHTML = top.map(([w,n])=>`<span class="wchip">${esc(w)}<b>${n}</b></span>`).join("");
+  $("#wrongEmpty").style.display = top.length ? "none" : "block";
+}
+
+function detail(s){
+  $("#mName").textContent = s.nick ? `${s.name} (${s.nick})` : s.name;
+  $("#mMeta").textContent = `${s.total}문항 중 ${s.correct}문항 정답 · ${s.rate}% · ${grade(s.rate)}등급 · ${s.time||""}`;
+  const rows = s.rows.slice().sort((a,b)=>String(a.work).localeCompare(String(b.work),"ko"));
+  $("#mBody").innerHTML = rows.length ? rows.map(r=>{
+    const rate = r.total ? Math.round(r.correct/r.total*100) : 0;
+    return `<div class="bar"><span>${esc(r.work)}</span>
+      <div class="track"><div class="fill ${rate<60?'low':''}" style="width:${rate}%"></div></div>
+      <span>${r.correct}/${r.total}</span></div>
+      ${r.wrongs ? `<div style="font-size:12.5px;color:var(--wrong);margin:-2px 0 8px 96px">오답: ${esc(r.wrongs)}</div>`:""}`;
+  }).join("") : `<div class="empty">조항별 기록이 없습니다.</div>`;
+  $("#modal").classList.add("on");
+}
+
+if(getUrl()) load(); else $("#setup").style.display="block";
+</script>
+</body>
+</html>

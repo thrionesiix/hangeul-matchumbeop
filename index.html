@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0e0a">
+<title>비상(박) 한글맞춤법 복습시험</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#0a0e0a; --bg-card:#111a11; --bg-input:#101a10;
+  --border-row:rgba(255,255,255,.35); --border-div:rgba(255,255,255,.40); --border-outer:rgba(255,255,255,.35);
+  --green-brand:#4a5a3a; --green-accent:#6b8f5e; --green-light:#8aad7a; --green-bright:#4ade80;
+  --gold:#c9a84c; --gold-dim:#a08838;
+  --text-primary:#ece8e0; --text-secondary:#c4bfb4; --text-muted:#928d82; --text-dim:#7a7568;
+  --correct:#22c55e; --wrong:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg-deep);color:var(--text-primary);
+  font-family:'Noto Sans KR',system-ui,sans-serif;word-break:keep-all;line-height:1.6}
+h1,h2,h3,.serif{font-family:'Noto Serif KR',serif}
+button{font-family:inherit;cursor:pointer}
+.wm{position:fixed;inset:0;z-index:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.wm span{font-family:'Noto Serif KR',serif;font-size:min(22vw,230px);font-weight:700;color:#fff;opacity:.045;letter-spacing:.06em}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px 60px}
+
+/* ---------- 시작 화면 ---------- */
+#setup{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-block:48px;max-width:860px}
+.brand{text-align:center;margin-bottom:26px}
+.brand .logo{font-family:'Noto Serif KR',serif;font-size:15px;letter-spacing:.35em;color:var(--green-light)}
+.brand h1{margin:10px 0 6px;font-size:clamp(24px,5vw,34px);color:var(--text-primary)}
+.brand p{margin:0;color:var(--text-secondary);font-size:14px}
+.panel{background:linear-gradient(180deg,#151f15,#0e160e);border:1px solid var(--border-outer);
+  border-radius:16px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06)}
+.panel + .panel{margin-top:14px}
+.panel h3{margin:0 0 4px;font-size:16px;color:var(--gold)}
+.panel .sub{margin:0 0 14px;font-size:13px;color:var(--text-muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid rgba(255,255,255,.22);
+  border-radius:10px;background:rgba(255,255,255,.02);transition:.15s}
+.opt:hover{border-color:var(--green-accent)}
+.opt.on{background:var(--green-brand);border-color:var(--green-accent)}
+.box{flex:0 0 18px;height:18px;margin-top:3px;border:1px solid rgba(255,255,255,.3);border-radius:4px;position:relative}
+.opt.on .box{border-color:var(--green-accent)}
+.opt.on .box::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid var(--green-light);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.opt b{display:block;font-size:14px;font-weight:500}
+.opt small{color:var(--text-muted);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.22);
+  background:transparent;color:var(--text-secondary);font-size:14px}
+.chip.on{background:var(--green-brand);border-color:var(--green-accent);color:var(--text-primary)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap}
+.count{font-size:13px;color:var(--text-secondary)}
+.count b{color:var(--gold);font-size:17px}
+.nameinput{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,.25);
+  background:var(--bg-input);color:var(--text-primary);font-size:16px;font-family:inherit}
+.nameinput::placeholder{color:var(--text-dim)}
+.btn{padding:12px 22px;border-radius:10px;border:1px solid var(--green-accent);
+  background:var(--green-brand);color:var(--text-primary);font-size:15px;font-weight:500;transition:.15s}
+.btn:hover{background:#56693f}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.25);color:var(--text-secondary)}
+.btn.ghost:hover{background:rgba(255,255,255,.06)}
+.btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold-dim));border-color:var(--gold);color:#1a1405;font-weight:700}
+.btn.gold:hover{background:linear-gradient(180deg,#d8b95c,#b39a3f)}
+.btn.big{width:100%;padding:16px;font-size:17px;margin-top:16px}
+
+/* ---------- 헤더 ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border-row);padding:10px 0;margin-bottom:22px}
+.hbar{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:0 16px}
+.hbar .t{flex:1;min-width:0}
+.hbar .t b{display:block;font-family:'Noto Serif KR',serif;font-size:15px}
+.hbar .t small{color:var(--text-muted);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ring{position:relative;width:46px;height:46px;flex:0 0 46px}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold)}
+.pbar{height:4px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;margin:10px 16px 0;max-width:760px}
+.pbar div{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--gold));transition:width .3s}
+
+/* ---------- 문항 (한 문제씩) ---------- */
+.stage{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:16px;padding:24px;
+  animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.qhead{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.num{height:26px;padding:0 11px;border-radius:999px;background:var(--green-brand);
+  border:1px solid var(--green-accent);display:flex;align-items:center;font-size:12px;font-weight:700}
+.tag{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:var(--text-secondary)}
+.tag.lv2{border-color:var(--gold);color:var(--gold)}
+.stem{font-size:clamp(17px,2.6vw,20px);margin:0 0 22px;line-height:1.85}
+.blank{display:inline-block;min-width:84px;border-bottom:2px solid var(--gold);text-align:center;
+  color:var(--gold);font-weight:700;padding:0 8px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ch{position:relative;padding:20px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+  background:var(--bg-input);color:var(--text-primary);font-size:18px;font-weight:500;transition:.12s}
+.ch:hover:not(:disabled){border-color:var(--green-accent);background:#16241a;transform:translateY(-2px)}
+.ch .kbd{position:absolute;left:10px;top:8px;font-size:10px;color:var(--text-dim)}
+.ch.ok{border-color:var(--correct);background:rgba(34,197,94,.16);color:#bbf7d0}
+.ch.no{border-color:var(--wrong);background:rgba(239,68,68,.14);color:#fecaca}
+.ch:disabled{cursor:default}
+.wrongshot{text-align:center;animation:fade .2s ease-out}
+.wrongshot .imgbox{background:#fff;border-radius:16px;padding:12px;display:inline-block;max-width:300px;width:100%;
+  box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.wrongshot .imgbox img,.wrongshot .imgbox svg{width:100%;height:auto;display:block}
+.wtitle{font-family:'Noto Serif KR',serif;font-size:22px;color:var(--wrong);margin:16px 0 4px}
+.wsub{font-size:13px;color:var(--text-muted)}
+.verdict{margin-top:18px;display:none}
+.verdict.show{display:block;animation:fade .2s ease-out}
+.vtitle{font-family:'Noto Serif KR',serif;font-size:18px;margin-bottom:8px}
+.vtitle.o{color:var(--correct)}
+.vtitle.x{color:var(--wrong)}
+.exp{padding:14px 16px;border-left:3px solid var(--green-accent);background:rgba(255,255,255,.03);
+  border-radius:0 8px 8px 0;font-size:14px;color:var(--text-secondary)}
+.exp .src{display:block;margin-top:7px;font-size:11.5px;color:var(--text-dim)}
+.nextbtn{width:100%;margin-top:16px;padding:15px;border-radius:12px;border:1px solid var(--gold);
+  background:linear-gradient(180deg,var(--gold),var(--gold-dim));color:#1a1405;font-size:16px;font-weight:700}
+.nexthint{text-align:center;font-size:12px;color:var(--text-dim);margin-top:9px}
+
+/* ---------- 결과 ---------- */
+#result{display:none}
+.score{text-align:center;padding:32px 18px;background:linear-gradient(180deg,#16211a,#0d140d);
+  border:1px solid var(--border-outer);border-radius:16px;margin-bottom:16px}
+.score .big{font-family:'Noto Serif KR',serif;font-size:58px;color:var(--gold);line-height:1.1}
+.score .sub{color:var(--text-secondary);font-size:15px;margin-top:6px}
+.bars{display:grid;gap:8px;margin-top:20px;text-align:left}
+.bar{display:grid;grid-template-columns:96px 1fr 54px;gap:10px;align-items:center;font-size:13px}
+.track{height:9px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--green-bright))}
+.wrongbox{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:14px;padding:18px;margin-bottom:16px}
+.wrongbox h3{margin:0 0 12px;font-size:15px;color:var(--wrong)}
+.wrongitem{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:14px}
+.wrongitem:last-child{border-bottom:0}
+.wrongitem .line{color:var(--text-secondary);font-size:13px;margin-top:5px}
+.wrongitem .line b{color:var(--correct)}
+.wrongitem .line s{color:var(--wrong)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn{flex:1;min-width:150px;text-align:center}
+
+/* ---------- 토스트 / 축하 ---------- */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:#16241a;border:1px solid var(--green-accent);color:var(--text-primary);
+  padding:12px 20px;border-radius:999px;font-size:14px;z-index:99;transition:.25s;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#cele{position:fixed;inset:0;z-index:98;display:none;align-items:center;justify-content:center;
+  background:rgba(5,8,5,.86);text-align:center;padding:20px}
+#cele.on{display:flex}
+#cele .em{font-size:72px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+#cele h2{font-size:34px;color:var(--gold);margin:12px 0 8px}
+#cele p{color:var(--text-secondary);margin:0 0 20px}
+.confetti{position:fixed;top:-12px;width:9px;height:14px;z-index:97;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+
+/* ---------- 하단 ---------- */
+.notice{margin-top:28px;padding:16px;border:1px solid rgba(239,68,68,.35);border-radius:12px;
+  background:rgba(239,68,68,.05);font-size:12px;color:var(--text-muted);line-height:1.75}
+.notice b{color:#fca5a5}
+.srcnote{margin-top:14px;font-size:12px;color:var(--text-dim);line-height:1.8}
+
+@media (max-width:768px){
+  .grid{grid-template-columns:1fr}
+  .choices{grid-template-columns:1fr}
+  .stage{padding:18px}
+  .bar{grid-template-columns:76px 1fr 46px}
+}
+</style>
+</head>
+<body>
+<div class="wm"><span>오름</span></div>
+
+<!-- ============ 시작 화면 ============ -->
+<div class="wrap" id="setup">
+  <div class="brand">
+    <div class="logo">[ 오 름 ] 국 어</div>
+    <h1>비상(박) 한글맞춤법 복습시험</h1>
+    <p>공통국어 「02. 한글 맞춤법과 국어 생활」 · 한글 맞춤법(문체부 고시 제2017-12호)</p>
+  </div>
+
+  <div class="panel">
+    <h3>닉네임 만들기</h3>
+    <p class="sub">닉네임은 시험 화면에 표시됩니다. 이름은 선생님이 결과를 확인할 때 쓰입니다.</p>
+    <input id="nick" class="nameinput" type="text" placeholder="닉네임 (예: 맞춤법요정)" maxlength="16" autocomplete="off">
+    <input id="name" class="nameinput" type="text" placeholder="이름 (실명)" style="margin-top:10px" autocomplete="off">
+  </div>
+
+  <div class="panel">
+    <h3>출제 범위</h3>
+    <p class="sub">시험 범위에 해당하는 영역을 선택하세요. (복수 선택)</p>
+    <div class="grid" id="areas"></div>
+    <div class="row">
+      <button class="btn ghost" id="allBtn">전체 선택 / 해제</button>
+      <span class="count"><b id="poolCnt">0</b>문항 중에서 출제</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>난도</h3>
+    <p class="sub">심화는 제57항 구별(걷잡다/겉잡다 등), 낯선 어휘, ‘이/히’ 구별처럼 헷갈리는 문항입니다.</p>
+    <div class="chips" id="levels"></div>
+  </div>
+
+  <div class="panel">
+    <h3>문항 수</h3>
+    <p class="sub">풀 때마다 문제가 새로 뽑힙니다. 최근에 푼 문항은 뒤로 미뤄집니다.</p>
+    <div class="chips" id="counts"></div>
+  </div>
+
+  <button class="btn gold big" id="startBtn">시험 시작하기 →</button>
+
+  <div class="srcnote">
+    ※ 모든 문항의 정답·예문·해설은 <b>비상(박) 공통국어 교사용 교과서</b>, <b>한글 맞춤법(문화체육관광부 고시 제2017-12호)</b>,
+    <b>한글 맞춤법·표준어 규정 해설(국립국어원)</b>에 실린 조항과 예시에서만 가져왔습니다.
+  </div>
+</div>
+
+<!-- ============ 시험 화면 ============ -->
+<div id="quiz" style="display:none">
+  <header>
+    <div class="hbar">
+      <button class="btn ghost" id="backBtn" style="padding:8px 12px;font-size:13px">← 나가기</button>
+      <div class="t"><b id="hName">한글맞춤법 복습시험</b><small id="hsub"></small></div>
+      <div class="ring">
+        <svg width="46" height="46"><circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="4"></circle>
+        <circle id="ringC" cx="23" cy="23" r="19" fill="none" stroke="#c9a84c" stroke-width="4" stroke-linecap="round"
+          stroke-dasharray="119.4" stroke-dashoffset="119.4"></circle></svg>
+        <span id="ringT">0%</span>
+      </div>
+    </div>
+    <div class="pbar" style="margin-left:auto;margin-right:auto"><div id="pfill" style="width:0"></div></div>
+  </header>
+
+  <div class="wrap">
+    <div id="stage"></div>
+    <div class="notice">
+      본 자료는 오직 <b>[오름] 국어</b> 학원 수강생들의 성적 향상을 위해 제작된 비매품입니다.
+      본 자료를 외부로 유출하거나 무단 배포하는 행위는 학원과 동료 수강생들에게 심각한 피해를 주는 범죄 행위입니다.
+      무단 배포 적발 시, 즉각적인 퇴원 조치는 물론, 유출로 인한 경영상 손실에 대해 <b>강력한 법적 조치</b>를 취할 예정입니다.
+    </div>
+  </div>
+</div>
+
+<!-- ============ 결과 화면 ============ -->
+<div id="result">
+  <div class="wrap" style="padding-top:36px">
+    <div class="score">
+      <div class="big" id="rScore">0점</div>
+      <div class="sub" id="rSub">0 / 0 문항</div>
+      <div class="bars" id="rBars"></div>
+    </div>
+    <div class="wrongbox" id="rWrongBox">
+      <h3>틀린 문항 다시 보기</h3>
+      <div id="rWrong"></div>
+    </div>
+    <div class="actions">
+      <button class="btn gold" id="submitBtn">결과 제출</button>
+      <button class="btn" id="againBtn">🔄 새로운 문제 풀기</button>
+      <button class="btn ghost" id="homeBtn">범위 다시 고르기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="cele">
+  <div>
+    <div class="em">🎉</div>
+    <h2>완벽해!</h2>
+    <p id="celeMsg">이대로면 시험도 100점이지. 조금 더 파이팅!</p>
+    <button class="btn gold" onclick="document.getElementById('cele').classList.remove('on')">닫기</button>
+  </div>
+</div>
+
+<iframe name="sink" style="display:none"></iframe>
+<form id="sendForm" method="POST" target="sink" style="display:none">
+  <input type="hidden" name="data" id="sendData">
+</form>
+
+<script>
+/* ===========================================================
+   비상(박) 한글 맞춤법 복습시험 — 문항 은행(ITEM BANK)
+   -----------------------------------------------------------
+   모든 문항의 정답 표기와 예문은 아래 세 자료에만 근거함.
+   [교] 비상(박) 공통국어 교사용 교과서 '02. 한글 맞춤법과 국어 생활'
+   [고] 한글 맞춤법(문화체육관광부 고시 제2017-12호)
+   [해] 한글 맞춤법·표준어 규정 해설(국립국어원, 2018)
+   q: 문장(%s 자리에 선택지가 들어감) / a: 바른 표기 / b: 틀린 표기
+   h: 근거 조항 / area: 영역 / e: 해설 / s: 출처
+   =========================================================== */
+const POOL = [
+/* ---------- 소리에 관한 것 · 제5항(된소리) ---------- */
+{area:"소리",h:"제5항",q:"오빠는 앞마당에서 친구들과 %s를 쳤다.",a:"딱지",b:"딱찌",e:"[딱찌]로 소리 나지만 ‘ㄱ’ 받침 뒤에서 나는 된소리는 같은 음절이나 비슷한 음절이 겹쳐 나는 경우가 아니면 된소리로 적지 않는다.",s:"교·고",lv:1},
+{area:"소리",h:"제5항",q:"아이들이 %s을 피우며 교실을 뛰어다닌다.",a:"법석",b:"법썩",e:"[법썩]으로 소리 나지만 ‘ㅂ’ 받침 뒤에서 나는 된소리이므로 된소리로 적지 않는다.",s:"교·고",lv:1},
+{area:"소리",h:"제5항",q:"도시락에는 과일이 %s 담겨 있었다.",a:"듬뿍",b:"듬북",e:"‘ㅁ’ 받침 뒤에서 뚜렷한 까닭 없이 나는 된소리는 다음 음절의 첫소리를 된소리로 적는다.",s:"교",lv:1},
+{area:"소리",h:"제5항",q:"어머니께서 무를 썰어 %s를 담그셨다.",a:"깍두기",b:"깍뚜기",e:"[깍뚜기]로 발음되지만 ‘ㄱ’ 받침 뒤에서 나는 된소리이므로 된소리로 적지 않는다.",s:"교·고",lv:1},
+{area:"소리",h:"제5항",q:"가위로 종이를 %s 잘랐다.",a:"싹둑",b:"싹뚝",e:"[싹뚝]으로 발음되지만 ‘ㄱ’ 받침 뒤에서 ‘ㄷ’이 된소리로 나는 경우이므로 된소리로 적지 않는다.",s:"교·고",lv:1},
+{area:"소리",h:"제5항",q:"점심으로 따끈한 %s를 먹었다.",a:"국수",b:"국쑤",e:"[국쑤]로 소리 나도 ‘ㄱ’ 받침 뒤의 된소리는 표기에 반영하지 않는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"그는 %s 자리에서 일어섰다.",a:"갑자기",b:"갑짜기",e:"‘ㅂ’ 받침 뒤에서 나는 된소리는 된소리로 적지 아니한다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"오늘은 바람이 %s 분다.",a:"몹시",b:"몹씨",e:"‘ㅂ’ 받침 뒤에서 나는 된소리는 된소리로 적지 아니한다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"곱게 단장한 %s가 가마에 올랐다.",a:"색시",b:"색씨",e:"‘ㄱ’ 받침 뒤에서 나는 된소리는 된소리로 적지 아니한다.",s:"고",lv:2},
+{area:"소리",h:"제5항",q:"뒷산에서 %s가 구슬프게 운다.",a:"소쩍새",b:"소적새",e:"두 모음 사이에서 뚜렷한 까닭 없이 나는 된소리는 된소리로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"가방을 한쪽 %s에 둘러멨다.",a:"어깨",b:"어개",e:"두 모음 사이에서 뚜렷한 까닭 없이 나는 된소리는 된소리로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"액자가 %s 걸려 있었다.",a:"거꾸로",b:"꺼꾸로",e:"두 모음 사이에서 나는 된소리만 된소리로 적으며, 첫음절은 예사소리 그대로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제5항",q:"그는 물건을 %s 내려놓았다.",a:"살짝",b:"살작",e:"‘ㄹ’ 받침 뒤에서 나는 된소리는 된소리로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"가방에 짐을 %s 넣었다.",a:"잔뜩",b:"잔득",e:"‘ㄴ’ 받침 뒤에서 나는 된소리는 된소리로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"이 길이 %s 빠르다.",a:"훨씬",b:"훨신",e:"‘ㄹ’ 받침 뒤에서 나는 된소리는 된소리로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제5항",q:"새 옷을 입으니 기분이 %s하다.",a:"산뜻",b:"산듯",e:"‘ㄴ’ 받침 뒤에서 나는 된소리는 된소리로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제5항",q:"%s 옛 생각이 나서 웃음이 났다.",a:"이따금",b:"이따끔",e:"두 모음 사이에서 나는 된소리를 적은 것으로, 규정에 제시된 표기는 ‘이따금’이다.",s:"고",lv:2},
+{area:"소리",h:"제5항",q:"밥그릇에 밥을 %s 담았다.",a:"담뿍",b:"담북",e:"‘ㅁ’ 받침 뒤에서 나는 된소리는 된소리로 적는다.",s:"고",lv:2},
+
+/* ---------- 소리에 관한 것 · 제11항(두음 법칙) ---------- */
+{area:"소리",h:"제11항",q:"시의 운율은 %s과 외형률로 나눌 수 있다.",a:"내재율",b:"내재률",e:"모음이나 ‘ㄴ’ 받침 뒤에 이어지는 ‘렬, 률’은 ‘열, 율’로 적는다. ‘재’는 모음으로 끝나므로 ‘율’.",s:"교",lv:1},
+{area:"소리",h:"제11항",q:"시의 운율은 내재율과 %s로 나눌 수 있다.",a:"외형률",b:"외형율",e:"모음이나 ‘ㄴ’ 받침이 아닌 다른 음운(‘ㅇ’) 뒤이므로 본음대로 ‘률’로 적는다.",s:"교",lv:1},
+{area:"소리",h:"제11항",q:"두 방송사 간에 %s 경쟁이 치열합니다.",a:"시청률",b:"시청율",e:"‘률’ 앞말의 받침이 ‘ㅇ’이므로 본음대로 ‘률’로 적는다.",s:"교",lv:1},
+{area:"소리",h:"제11항",q:"가위바위보를 연속 세 번 이길 %s을 구해 보자.",a:"확률",b:"확율",e:"‘률’이 첫머리에 오지 않고 ‘ㄱ’ 받침 뒤에 이어지므로 ‘확률’로 적는다.",s:"교",lv:1},
+{area:"소리",h:"제11항",q:"백화점이 큰 폭의 %s 행사를 열었다.",a:"할인율",b:"할인률",e:"‘ㄴ’ 받침 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"교",lv:1},
+{area:"소리",h:"제11항",q:"합격자의 이름을 차례대로 %s했다.",a:"나열",b:"나렬",e:"모음 뒤에 이어지는 ‘렬’은 ‘열’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"의견이 갈려 조직이 %s되었다.",a:"분열",b:"분렬",e:"‘ㄴ’ 받침 뒤에 이어지는 ‘렬’은 ‘열’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"전체에서 차지하는 %s을 계산해 보자.",a:"비율",b:"비률",e:"모음 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"단체 생활에는 엄격한 %s이 필요하다.",a:"규율",b:"규률",e:"모음 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"이 시는 %s이 아름답다.",a:"선율",b:"선률",e:"‘ㄴ’ 받침 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"소수점 아래를 %s로 나타내었다.",a:"백분율",b:"백분률",e:"‘ㄴ’ 받침 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"온몸에 %s이 일 만큼 감동적이었다.",a:"전율",b:"전률",e:"‘ㄴ’ 받침 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제11항",q:"두 팀의 경쟁이 %s하게 이어졌다.",a:"치열",b:"치렬",e:"모음 뒤에 이어지는 ‘렬’은 ‘열’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"이번 사업의 %s은 매우 낮았다.",a:"실패율",b:"실패률",e:"모음 뒤에 이어지는 ‘률’은 ‘율’로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제11항",q:"그는 %s에 어긋나는 일을 하지 않는다.",a:"양심",b:"량심",e:"한자음 ‘랴, 려, 례, 료, 류, 리’가 단어의 첫머리에 올 적에는 두음 법칙에 따라 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"우리 반은 한국 %s를 배우고 있다.",a:"역사",b:"력사",e:"단어의 첫머리이므로 두음 법칙에 따라 ‘역’으로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"그는 %s 바른 학생이다.",a:"예의",b:"례의",e:"단어의 첫머리이므로 두음 법칙에 따라 ‘예’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"올해 %s하는 옷차림을 살펴보았다.",a:"유행",b:"류행",e:"단어의 첫머리이므로 두음 법칙에 따라 ‘유’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"주말에 %s을 하러 갔다.",a:"이발",b:"리발",e:"단어의 첫머리이므로 두음 법칙에 따라 ‘이’로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"전설 속 %s으로 들어가는 이야기이다.",a:"용궁",b:"룡궁",e:"단어의 첫머리이므로 두음 법칙에 따라 ‘용’으로 적는다.",s:"고",lv:1},
+{area:"소리",h:"제11항",q:"결혼을 앞두고 %s를 준비했다.",a:"혼례",b:"혼예",e:"단어의 첫머리 이외의 경우에는 본음대로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제11항",q:"장마철이라 %s가 불어났다.",a:"급류",b:"급유",e:"단어의 첫머리 이외의 경우에는 본음대로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제11항",q:"그가 그런 말을 했을 %s가 없다.",a:"리",b:"이",e:"의존 명사 ‘리(理)’는 본음대로 적는다.",s:"고",lv:2},
+{area:"소리",h:"제11항",q:"가족과 함께 %s을 떠났다.",a:"해외여행",b:"해외려행",e:"접두사처럼 쓰이는 한자가 붙어서 된 말에서도 두음 법칙에 따라 적는다.",s:"고",lv:2},
+
+/* ---------- 형태에 관한 것 · 제19항 ---------- */
+{area:"형태",h:"제19항",q:"그는 벽난로를 청소하다가 %s을 뒤집어썼다.",a:"그을음",b:"그으름",e:"‘그을다’의 어간 ‘그을-’에 접미사 ‘-음’이 붙은 말이므로 어간의 원형을 밝혀 적는다.",s:"교",lv:1},
+{area:"형태",h:"제19항",q:"나는 친구와 %s 학교 도서관으로 향했다.",a:"같이",b:"가치",e:"‘같다’의 어간 ‘같-’에 접미사 ‘-이’가 붙어 부사가 된 말이므로 어간의 원형을 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제19항",q:"그는 나를 보면 %s 농담을 하곤 했다.",a:"실없이",b:"실업시",e:"‘실없-’에 접미사 ‘-이’가 붙어 부사가 된 말이므로 어간의 원형을 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제19항",q:"칼국수 면을 %s을 넣은 물에 담갔다.",a:"얼음",b:"어름",e:"‘얼다’의 어간 ‘얼-’에 ‘-음’이 붙은 말이므로 원형을 밝혀 적는다. ‘어름’은 두 물건의 끝이 맞닿은 자리를 뜻한다.",s:"교·고",lv:1},
+{area:"형태",h:"제19항",q:"분식집에서 %s를 사 먹었다.",a:"떡볶이",b:"떡뽁이",e:"어간 ‘볶-’에 접미사 ‘-이’가 붙어 명사가 된 말이므로 어간의 형태를 밝혀 적는다.",s:"교",lv:1},
+{area:"형태",h:"제19항",q:"아는 것을 안다 하는 것이 곧 %s이다.",a:"앎",b:"암",e:"어간 ‘알-’에 명사 파생 접미사 ‘-ㅁ’이 붙었으므로 어간의 형태를 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제19항",q:"옷의 %s를 줄자로 재었다.",a:"길이",b:"기리",e:"어간 ‘길-’에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제19항",q:"교실에서 %s 소리가 새어 나왔다.",a:"웃음",b:"우슴",e:"어간 ‘웃-’에 ‘-음’이 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제19항",q:"아기의 %s 소리에 잠이 깼다.",a:"울음",b:"우름",e:"어간 ‘울-’에 ‘-음’이 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제19항",q:"수업 시간에 %s이 쏟아졌다.",a:"졸음",b:"조름",e:"어간 ‘졸-’에 ‘-음’이 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제19항",q:"그는 사람에 대한 %s이 깊다.",a:"믿음",b:"미듬",e:"어간 ‘믿-’에 ‘-음’이 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제19항",q:"방문을 %s로 만들었다.",a:"미닫이",b:"미다지",e:"어간에 ‘-이’가 붙어 명사가 된 말이므로 어간의 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제19항",q:"봄이 오면 %s를 나간다.",a:"달맞이",b:"달마지",e:"어간에 ‘-이’가 붙어 명사가 된 말이므로 어간의 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제19항",q:"곤충의 %s를 관찰했다.",a:"더듬이",b:"더드미",e:"어간 ‘더듬-’에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제19항",q:"그는 %s 그 일을 해냈다.",a:"굳이",b:"구지",e:"어간 ‘굳-’에 ‘-이’가 붙어 부사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제19항",q:"그 이야기는 %s 들어서 알고 있다.",a:"익히",b:"이키",e:"어간에 ‘-히’가 붙어 부사가 된 말이므로 어간의 원형을 밝혀 적는다.",s:"교·고",lv:2},
+
+/* ---------- 형태에 관한 것 · 제23항 ---------- */
+{area:"형태",h:"제23항",q:"넘어져도 다시 일어서는 %s 인형을 샀다.",a:"오뚝이",b:"오뚜기",e:"‘-하다’가 붙는 어근 ‘오뚝’에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제23항",q:"그는 배가 나온 %s 아저씨를 그렸다.",a:"배불뚝이",b:"배불뚜기",e:"‘-하다’가 붙는 어근에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"살이 빠져 %s가 되었다.",a:"홀쭉이",b:"홀쭈기",e:"‘-하다’가 붙는 어근에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"성격이 가벼운 %s라는 말을 들었다.",a:"더펄이",b:"더퍼리",e:"‘-거리다’가 붙는 어근에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제23항",q:"동생을 %s라고 놀렸다.",a:"꿀꿀이",b:"꿀꾸리",e:"‘-거리다’가 붙는 어근에 ‘-이’가 붙어 명사가 된 말이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제23항",q:"입을 %s 내밀고 앉아 있었다.",a:"삐죽이",b:"삐주기",e:"‘-거리다’가 붙는 어근에 ‘-이’가 붙은 말이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제23항",q:"논둑에서 %s가 폴짝 뛰었다.",a:"개구리",b:"개굴이",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근에 ‘-이’가 붙어 명사가 된 것은 원형을 밝혀 적지 않는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"여름밤이면 %s가 운다.",a:"귀뚜라미",b:"귀뚜람이",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근이므로 원형을 밝혀 적지 않는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"가을 하늘에 %s 떼가 날아간다.",a:"기러기",b:"기럭이",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근이므로 원형을 밝혀 적지 않는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"숲에서 %s 우는 소리가 들렸다.",a:"뻐꾸기",b:"뻐꾹이",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근이므로 원형을 밝혀 적지 않는다.",s:"고",lv:2},
+{area:"형태",h:"제23항",q:"종이에 %s를 그렸다.",a:"동그라미",b:"동그람이",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근이므로 원형을 밝혀 적지 않는다.",s:"고",lv:1},
+{area:"형태",h:"제23항",q:"나무를 쪼는 %s를 보았다.",a:"딱따구리",b:"딱딱우리",e:"‘-하다’나 ‘-거리다’가 붙을 수 없는 어근이므로 원형을 밝혀 적지 않는다.",s:"고",lv:2},
+
+/* ---------- 형태에 관한 것 · 제25항 ---------- */
+{area:"형태",h:"제25항",q:"그는 %s 생각한 끝에 결정을 내렸다.",a:"곰곰이",b:"곰곰히",e:"부사 ‘곰곰’에 ‘-이’가 붙어 부사가 된 것이므로 그 부사의 원형을 밝혀 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제25항",q:"%s 그는 약속을 잊지 않았다.",a:"더욱이",b:"더우기",e:"부사 ‘더욱’에 ‘-이’가 붙어 부사가 된 것이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제25항",q:"그는 %s 일어나 공부를 시작했다.",a:"일찍이",b:"일찌기",e:"부사 ‘일찍’에 ‘-이’가 붙어 부사가 된 것이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제25항",q:"동생이 %s 웃어 보였다.",a:"생긋이",b:"생그시",e:"부사에 ‘-이’가 붙어 부사가 된 것이므로 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제25항",q:"그는 %s 서둘러 자리를 떴다.",a:"급히",b:"급이",e:"‘-하다’가 붙는 어근 ‘급’에 ‘-히’가 붙어 부사가 된 것이므로 어근의 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제25항",q:"그는 %s 일어섰다.",a:"슬며시",b:"슬몃이",e:"‘-하다’가 붙지 않는 경우에는 소리대로 적는다.",s:"고",lv:2},
+
+/* ---------- 형태에 관한 것 · 제27항 ---------- */
+{area:"형태",h:"제27항",q:"오늘이 %s인지 달력을 확인했다.",a:"며칠",b:"몇일",e:"‘몇 일’로 적으면 [며딜]로 소리 나야 하지만 실제 발음이 [며칠]이므로, 어원이 분명하지 않은 것으로 보아 소리 나는 대로 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제27항",q:"같은 일이 반복되자 %s이 났다.",a:"싫증",b:"실증",e:"둘 이상의 단어가 어울린 말은 각각 원형을 밝혀 적으므로 ‘싫-’과 ‘증’의 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제27항",q:"창가에 떨어진 %s을 주웠다.",a:"꽃잎",b:"꼰닙",e:"둘 이상의 단어가 어울려 이루어진 말은 각각 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"형태",h:"제27항",q:"하늘이 %s 물들었다.",a:"새파랗게",b:"세파랗게",e:"접두사가 붙어서 이루어진 말은 원형을 밝혀 적는다.",s:"고",lv:2},
+{area:"형태",h:"제27항",q:"%s가 아파서 치과에 갔다.",a:"어금니",b:"어금이",e:"‘이[齒]’가 합성어에서 ‘니’로 소리 날 때에는 ‘니’로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제27항",q:"아이의 %s가 새로 났다.",a:"앞니",b:"앞이",e:"‘이[齒]’가 합성어에서 ‘니’로 소리 날 때에는 ‘니’로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제27항",q:"스무 살이 되어 %s가 났다.",a:"사랑니",b:"사랑이",e:"‘이[齒]’가 합성어에서 ‘니’로 소리 날 때에는 ‘니’로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제27항",q:"%s께서 옛날이야기를 들려주셨다.",a:"할아버지",b:"할압어지",e:"어원은 분명하나 소리만 특이하게 변한 것은 변한 대로 적는다.",s:"고",lv:1},
+
+/* ---------- 형태에 관한 것 · 제35항(준말) ---------- */
+{area:"형태",h:"제35항",q:"신생 업체가 산업을 이끌 신제품을 %s.",a:"내놨다",b:"내났다",e:"‘내놓-’에 ‘-았-’이 붙은 ‘내놓았-’이 줄어 ‘내놨-’이 된 것이므로 준 대로 적는다.",s:"교",lv:1},
+{area:"형태",h:"제35항",q:"친구는 올해 아나운서가 %s.",a:"됐다",b:"됬다",e:"‘되-’에 ‘-었-’이 붙은 ‘되었-’이 줄어 ‘됐-’이 된 것이므로 준 대로 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제35항",q:"이렇게 하면 %s?",a:"돼요",b:"되요",e:"‘되어요’의 준말이므로 ‘ㅚ’ 뒤에 ‘-어’가 어울려 ‘ㅙ’로 준 대로 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제35항",q:"월요일에 %s.",a:"봬요",b:"뵈요",e:"‘뵈-’에 ‘-어요’가 결합한 형태가 줄어든 말이므로 ‘봬요’로 적는다.",s:"교·고",lv:1},
+{area:"형태",h:"제35항",q:"어제 본 영화를 오늘 또 %s.",a:"봤다",b:"밨다",e:"‘보았다’가 줄어든 말이므로 준 대로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제35항",q:"그는 책을 책상 위에 %s.",a:"뒀다",b:"뒜다",e:"‘두었다’가 줄어든 말이므로 준 대로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제35항",q:"동생에게 용돈을 %s.",a:"줬다",b:"줫다",e:"‘주었다’가 줄어든 말이므로 준 대로 적는다.",s:"고",lv:1},
+{area:"형태",h:"제35항",q:"그는 과녁을 향해 화살을 %s.",a:"쐈다",b:"쏬다",e:"‘쏘았다’가 줄어든 말이므로 준 대로 적는다.",s:"고",lv:2},
+{area:"형태",h:"제35항",q:"할머니를 %s 반가웠다.",a:"뵀더니",b:"뵜더니",e:"‘뵈었다’가 줄어 ‘뵀다’가 되므로 준 대로 적는다.",s:"고",lv:2},
+{area:"형태",h:"제35항",q:"바깥바람을 %s 정신이 들었다.",a:"쐤더니",b:"쇴더니",e:"‘쐬었다’가 줄어 ‘쐤다’가 되므로 준 대로 적는다.",s:"고",lv:2},
+
+/* ---------- 띄어쓰기 ---------- */
+{area:"띄어",h:"제41항",q:"공동 주택의 층간 소음 해결의 지름길은 배려와 %s.",a:"이해뿐입니다",b:"이해 뿐입니다",e:"‘뿐’은 조사이므로 그 앞말에 붙여 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제41항",q:"하루 종일 %s 하는 저희에게 맛있는 음식을 만들어 주셔서 감사합니다.",a:"공부만",b:"공부 만",e:"여기서 ‘만’은 한정을 나타내는 보조사이므로 앞말에 붙여 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제41항",q:"나는 %s 키가 큰 정후를 만났다.",a:"나만큼",b:"나 만큼",e:"체언 뒤의 ‘만큼’은 조사이므로 앞말에 붙여 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제41항",q:"그는 아무 말 없이 %s 있었다.",a:"웃고만",b:"웃고 만",e:"조사는 그 앞말에 붙여 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제41항",q:"이제 믿을 것은 %s.",a:"실력뿐이다",b:"실력 뿐이다",e:"조사는 단어이지만 홀로 쓸 수 없으므로 그 앞의 단어에 붙여 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제41항",q:"그는 %s 마음을 열지 않았다.",a:"어디까지나",b:"어디 까지나",e:"조사는 그 앞말에 붙여 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제41항",q:"우산을 챙겼는데 비가 %s 하늘만 맑았다.",a:"오기는커녕",b:"오기는 커녕",e:"‘커녕’은 보조사이므로 앞말에 붙여 쓴다.",s:"교",lv:2},
+{area:"띄어",h:"제42항",q:"접시에는 %s 담아라.",a:"먹을 만큼",b:"먹을만큼",e:"관형어 뒤의 ‘만큼’은 의존 명사이므로 띄어 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제42항",q:"그 일을 %s 설명해라.",a:"아는 대로",b:"아는대로",e:"‘대로’는 의존 명사이므로 앞말과 띄어 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제42항",q:"이렇게 %s 언제 다 옮겼니?",a:"많은 걸",b:"많은걸",e:"‘걸’은 의존 명사 ‘거’에 조사 ‘ㄹ’이 붙은 것이므로 앞말과 띄어 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제42항",q:"%s 힘이다.",a:"아는 것이",b:"아는것이",e:"의존 명사는 띄어 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제42항",q:"나도 %s 있다.",a:"할 수",b:"할수",e:"‘수’는 의존 명사이므로 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제42항",q:"그가 %s 오래다.",a:"떠난 지가",b:"떠난지가",e:"시간의 경과를 나타내는 ‘지’는 의존 명사이므로 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제42항",q:"네가 %s 알겠다.",a:"뜻한 바를",b:"뜻한바를",e:"‘바’는 의존 명사이므로 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제42항",q:"길에서 %s 만났다.",a:"아는 이를",b:"아는이를",e:"‘이’는 의존 명사이므로 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제42항",q:"아침을 먹은 후 무려 %s 먹는 밥이다.",a:"네 시간 만에",b:"네 시간만에",e:"여기서 ‘만’은 ‘앞말이 가리키는 동안’을 뜻하는 의존 명사이므로 띄어 쓴다.",s:"교",lv:2},
+{area:"띄어",h:"제43항",q:"나는 강아지 %s를 기른다.",a:"한 마리",b:"한마리",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제43항",q:"가게에서 과자 %s만 사기로 약속했다.",a:"한 봉지",b:"한봉지",e:"단위를 나타내는 명사는 앞말과 띄어 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제43항",q:"삼 년 전에 이사 간 친구가 편지 %s을 보냈다.",a:"한 통",b:"한통",e:"‘통’은 편지 따위를 세는 단위이므로 띄어 쓴다.",s:"교",lv:1},
+{area:"띄어",h:"제43항",q:"옷장에서 옷 %s을 꺼냈다.",a:"한 벌",b:"한벌",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제43항",q:"신발 가게에서 신 %s를 샀다.",a:"두 켤레",b:"두켤레",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제43항",q:"주차장에 차 %s가 서 있다.",a:"한 대",b:"한대",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제43항",q:"연필 %s를 빌렸다.",a:"한 자루",b:"한자루",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제43항",q:"외양간에 소 %s가 있다.",a:"한 마리",b:"한마리",e:"단위를 나타내는 명사는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제45항",q:"한국 %s로 상대국을 이겼다!",a:"삼 대 일",b:"삼대일",e:"두 말을 이어 주거나 열거할 적에 쓰이는 말은 띄어 쓴다.",s:"교·고",lv:1},
+{area:"띄어",h:"제45항",q:"회의에는 %s이 참석했다.",a:"국장 겸 과장",b:"국장겸 과장",e:"두 말을 이어 주는 ‘겸’은 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제45항",q:"참가자는 %s 정도였다.",a:"열 내지 스물",b:"열내지 스물",e:"두 말을 이어 주는 ‘내지’는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제45항",q:"운동회에서 %s의 경기가 열렸다.",a:"청군 대 백군",b:"청군대 백군",e:"두 말을 이어 주는 ‘대’는 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제45항",q:"교실에는 %s 있다.",a:"책상, 걸상 등이",b:"책상, 걸상등이",e:"열거할 적에 쓰이는 ‘등’은 띄어 쓴다.",s:"고",lv:1},
+{area:"띄어",h:"제47항",q:"잘도 %s!",a:"놀아만 나는구나",b:"놀아만나는구나",e:"앞말에 조사가 붙은 경우에는 그 뒤의 보조 용언을 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제47항",q:"책을 %s 했다.",a:"읽어도 보고",b:"읽어도보고",e:"앞말에 조사가 붙은 경우에는 그 뒤의 보조 용언을 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제47항",q:"네가 %s.",a:"덤벼들어 보아라",b:"덤벼들어보아라",e:"앞말이 합성 용언인 경우에는 그 뒤의 보조 용언을 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제47항",q:"그가 %s 하다.",a:"올 듯도",b:"올듯도",e:"중간에 조사가 들어갈 적에는 그 뒤에 오는 보조 용언을 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제47항",q:"그는 %s 한다.",a:"잘난 체를",b:"잘난체를",e:"중간에 조사가 들어갈 적에는 띄어 쓴다.",s:"고",lv:2},
+{area:"띄어",h:"제2항",q:"%s 누구보다도 달리기가 빠르다.",a:"그 선수는",b:"그선수는",e:"문장의 각 단어는 띄어 씀을 원칙으로 한다.",s:"교·고",lv:1},
+{area:"띄어",h:"제2항",q:"%s 이사 간 친구가 편지를 보냈다.",a:"삼 년 전에",b:"삼년전에",e:"문장의 각 단어는 띄어 씀을 원칙으로 한다.",s:"교",lv:1},
+
+/* ---------- 그 밖의 것 · 제51항 ---------- */
+{area:"그밖",h:"제51항",q:"방을 %s 치웠다.",a:"깨끗이",b:"깨끗히",e:"부사의 끝음절이 분명히 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 자료를 %s 확인했다.",a:"일일이",b:"일일히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 단어를 외웠다.",a:"틈틈이",b:"틈틈히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 지각을 한다.",a:"번번이",b:"번번히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"산이 %s 둘러싸고 있다.",a:"겹겹이",b:"겹겹히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"그는 나에게 %s 다가왔다.",a:"가까이",b:"가까히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"손님을 %s 맞이했다.",a:"따뜻이",b:"따뜻히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"그는 %s 자리를 지켰다.",a:"의젓이",b:"의젓히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"그는 %s 거짓말을 했다.",a:"버젓이",b:"버젓히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"그 노력은 %s 되지 않았다.",a:"헛되이",b:"헛되히",e:"끝음절이 ‘이’로만 나는 것은 ‘-이’로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제51항",q:"그는 %s 공부했다.",a:"열심히",b:"열심이",e:"끝음절이 ‘이’나 ‘히’로 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 잘못을 인정했다.",a:"솔직히",b:"솔직이",e:"끝음절이 ‘이’나 ‘히’로 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 자료를 정리했다.",a:"꼼꼼히",b:"꼼꼼이",e:"끝음절이 ‘이’나 ‘히’로 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 규칙을 지켰다.",a:"엄격히",b:"엄격이",e:"끝음절이 ‘히’로만 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 답을 맞혔다.",a:"정확히",b:"정확이",e:"끝음절이 ‘히’로만 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그런 일은 %s 드물다.",a:"극히",b:"극이",e:"끝음절이 ‘히’로만 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제51항",q:"그는 %s 그 사실을 알고 있었다.",a:"딱히",b:"딱이",e:"끝음절이 ‘히’로만 나는 것은 ‘-히’로 적는다.",s:"고",lv:1},
+
+/* ---------- 그 밖의 것 · 제53항 ---------- */
+{area:"그밖",h:"제53항",q:"약속이 있어 먼저 %s.",a:"일어날게요",b:"일어날께요",e:"‘-(으)ㄹ게’는 예사소리로 적는다. ‘ㄹ’ 뒤에서 된소리로 나도 표기에 반영하지 않는다.",s:"교·고",lv:1},
+{area:"그밖",h:"제53항",q:"그때 집에 %s 그랬다.",a:"갈걸",b:"갈껄",e:"‘-(으)ㄹ걸’은 예사소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제53항",q:"책은 %s 좋다.",a:"읽을수록",b:"읽을쑤록",e:"‘-(으)ㄹ수록’은 예사소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제53항",q:"내일 비가 %s 모르겠다.",a:"올지",b:"올찌",e:"‘-(으)ㄹ지’는 예사소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제53항",q:"아무리 %s 포기하지 않겠다.",a:"힘들지라도",b:"힘들찌라도",e:"‘-(으)ㄹ지라도’는 예사소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제53항",q:"굶어 %s 뜻은 굽히지 않겠다.",a:"죽을지언정",b:"죽을찌언정",e:"‘-(으)ㄹ지언정’은 예사소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제53항",q:"우리 이제 어디로 %s?",a:"갈까",b:"갈가",e:"의문을 나타내는 어미 ‘-(으)ㄹ까’는 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제53항",q:"이 일을 언제 다 %s?",a:"할꼬",b:"할고",e:"의문을 나타내는 어미 ‘-(으)ㄹ꼬’는 된소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제53항",q:"내가 그런 일에 %s?",a:"질쏘냐",b:"질소냐",e:"의문을 나타내는 어미 ‘-(으)ㄹ쏘냐’는 된소리로 적는다.",s:"고",lv:2},
+
+/* ---------- 그 밖의 것 · 제54항 ---------- */
+{area:"그밖",h:"제54항",q:"동네 %s이 부지런히 일했다.",a:"일꾼",b:"일군",e:"접미사 ‘-꾼’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"그는 동네에서 이름난 %s이다.",a:"익살꾼",b:"익살군",e:"접미사 ‘-꾼’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"그는 %s 노릇을 하며 지냈다.",a:"심부름꾼",b:"심부름군",e:"접미사 ‘-꾼’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"짐을 나르는 %s을 불렀다.",a:"지게꾼",b:"지겟군",e:"접미사 ‘-꾼’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"단풍이 고운 %s을 뽐낸다.",a:"빛깔",b:"빛갈",e:"접미사 ‘-깔’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"음식이 %s부터 먹음직스럽다.",a:"때깔",b:"땟갈",e:"접미사 ‘-깔’은 된소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제54항",q:"그는 %s이 대단하다.",a:"성깔",b:"성갈",e:"접미사 ‘-깔’은 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"넘어져서 %s가 까졌다.",a:"팔꿈치",b:"팔굼치",e:"접미사 ‘-꿈치’는 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"신발이 작아 %s가 아프다.",a:"뒤꿈치",b:"뒷굼치",e:"접미사 ‘-꿈치’는 된소리로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제54항",q:"추워서 %s가 빨개졌다.",a:"귀때기",b:"귓대기",e:"접미사 ‘-때기’는 된소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제54항",q:"요즘은 %s도 보기 힘들다.",a:"코빼기",b:"콧배기",e:"접미사 ‘-빼기’는 된소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제54항",q:"괜히 %s 소리를 했다.",a:"객쩍은",b:"객적은",e:"‘객쩍다’는 된소리로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제54항",q:"그는 %s 웃으며 자리를 피했다.",a:"겸연쩍게",b:"겸연적게",e:"‘겸연쩍다’는 된소리로 적는다.",s:"고",lv:2},
+
+/* ---------- 그 밖의 것 · 제56항 ---------- */
+{area:"그밖",h:"제56항",q:"지난겨울은 몹시 %s.",a:"춥더라",b:"춥드라",e:"지난 일을 나타내는 어미는 ‘-더라, -던’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"%s 물이 얕아졌다.",a:"깊던",b:"깊든",e:"지난 일을 나타내는 어미는 ‘-던’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"그렇게 %s?",a:"좋던가",b:"좋든가",e:"지난 일을 나타내는 어미는 ‘-던’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"그 사람 말 %s!",a:"잘하던데",b:"잘하든데",e:"지난 일을 나타내는 어미는 ‘-던’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"얼마나 %s 몰라.",a:"놀랐던지",b:"놀랐든지",e:"지난 일을 나타내는 어미는 ‘-던’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"%s 마음대로 먹어라.",a:"배든지 사과든지",b:"배던지 사과던지",e:"내용을 가리지 아니하는 뜻을 나타내는 조사와 어미는 ‘(-)든지’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"%s 마음대로 해라.",a:"가든지 오든지",b:"가던지 오던지",e:"내용을 가리지 아니하는 뜻을 나타내는 어미는 ‘-든지’로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제56항",q:"어떤 %s 상관하지 않겠다.",a:"모습이든지",b:"모습이던지",e:"‘이든지’는 어느 것이 선택되어도 차이가 없음을 나타내는 보조사이다.",s:"교·고",lv:1},
+
+/* ---------- 그 밖의 것 · 제57항(구별하여 적기) ---------- */
+{area:"그밖",h:"제57항",q:"둘로 %s.",a:"가름",b:"갈음",e:"‘가름’은 나누는 것, ‘갈음’은 다른 것으로 바꾸어 대신하는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"새 책상으로 %s하였다.",a:"갈음",b:"가름",e:"‘갈음하다’는 다른 것으로 바꾸어 대신한다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"풀을 썩힌 %s.",a:"거름",b:"걸음",e:"비료를 뜻할 때는 어간의 뜻과 멀어졌으므로 소리 나는 대로 ‘거름’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"빠른 %s.",a:"걸음",b:"거름",e:"‘걷다’의 뜻이 살아 있으므로 어간의 원형을 밝혀 ‘걸음’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"영월을 %s 왔다.",a:"거쳐",b:"걷혀",e:"‘거치다’는 지나는 길에 들른다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"외상값이 잘 %s.",a:"걷힌다",b:"거친다",e:"‘걷히다’는 ‘걷다’의 피동사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"%s 수 없는 상태.",a:"걷잡을",b:"겉잡을",e:"‘걷잡다’는 잘못 치닫는 형세를 붙들어 잡는다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"%s 이틀 걸릴 일.",a:"겉잡아서",b:"걷잡아서",e:"‘겉잡다’는 겉으로 보고 대강 짐작한다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"그는 부지런하다. %s 잘 산다.",a:"그러므로",b:"그럼으로",e:"‘그러므로’는 ‘그러니까’의 뜻을 나타내는 접속 부사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"그는 열심히 공부한다. %s 은혜에 보답한다.",a:"그럼으로써",b:"그러므로써",e:"‘그럼으로(써)’는 ‘그렇게 하는 것으로(써)’라는 수단·방법의 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"%s판이 벌어졌다.",a:"노름",b:"놀음",e:"도박을 뜻할 때는 어간의 뜻과 멀어졌으므로 ‘노름’으로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"즐거운 %s.",a:"놀음",b:"노름",e:"‘놀이’의 뜻일 때는 어간의 원형을 밝혀 ‘놀음’으로 적는다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"진도가 너무 %s.",a:"느리다",b:"늘이다",e:"‘느리다’는 속도가 더딤을 뜻한다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"고무줄을 %s.",a:"늘인다",b:"늘린다",e:"‘늘이다’는 본디보다 길게 하는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"수출량을 더 %s.",a:"늘린다",b:"늘인다",e:"‘늘리다’는 수나 양을 많아지게 하는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"옷을 %s.",a:"다린다",b:"달인다",e:"‘다리다’는 다리미로 문지르는 것이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"약을 %s.",a:"달인다",b:"다린다",e:"‘달이다’는 액체를 끓여 진하게 하는 것이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"부주의로 손을 %s.",a:"다쳤다",b:"닫혔다",e:"‘다치다’는 부딪쳐서 상하는 것이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"문이 저절로 %s.",a:"닫혔다",b:"닫쳤다",e:"‘닫히다’는 ‘닫다’의 피동사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"문을 힘껏 %s.",a:"닫쳤다",b:"닫혔다",e:"‘닫치다’는 문을 세게 닫는다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"벌써 일을 %s.",a:"마쳤다",b:"맞혔다",e:"‘마치다’는 일을 끝낸다는 뜻이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"여러 문제를 더 %s.",a:"맞혔다",b:"마쳤다",e:"‘맞히다’는 정답을 골라낸다는 뜻이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"%s가 덧났다.",a:"목거리",b:"목걸이",e:"‘목거리’는 목이 붓고 아픈 병을 뜻한다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"금%s를 선물로 받았다.",a:"목걸이",b:"목거리",e:"‘목걸이’는 목에 거는 장신구이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"나라를 위해 목숨을 %s.",a:"바쳤다",b:"받쳤다",e:"‘바치다’는 정중히 드린다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"우산을 %s 간다.",a:"받치고",b:"바치고",e:"‘받치다’는 밑에서 괴거나 위로 펼쳐 든다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"쇠뿔에 %s.",a:"받혔다",b:"받쳤다",e:"‘받히다’는 ‘받다’의 피동사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"술을 체에 %s.",a:"밭친다",b:"받친다",e:"‘밭치다’는 건더기와 액체를 거르는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"약속은 %s 지켜라.",a:"반드시",b:"반듯이",e:"‘반드시’는 ‘꼭’의 뜻이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"고개를 %s 들어라.",a:"반듯이",b:"반드시",e:"‘반듯이’는 비뚤어지지 않고 바르게라는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"차와 차가 마주 %s.",a:"부딪쳤다",b:"부딪혔다",e:"‘부딪치다’는 ‘부딪다’를 강조한 말이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"마차가 화물차에 %s.",a:"부딪혔다",b:"부딪쳤다",e:"‘부딪히다’는 ‘부딪다’의 피동사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"힘이 %s 일이다.",a:"부치는",b:"붙이는",e:"‘부치다’는 모자라거나 미치지 못한다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"편지를 %s.",a:"부친다",b:"붙인다",e:"편지를 보낼 때는 ‘부치다’를 쓴다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"빈대떡을 %s.",a:"부친다",b:"붙인다",e:"기름에 지질 때는 ‘부치다’를 쓴다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"우표를 %s.",a:"붙인다",b:"부친다",e:"맞닿아 떨어지지 않게 할 때는 ‘붙이다’를 쓴다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"불을 %s.",a:"붙인다",b:"부친다",e:"불이 옮아 타게 할 때는 ‘붙이다’를 쓴다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"책상을 벽에 %s.",a:"붙였다",b:"부쳤다",e:"맞닿게 할 때는 ‘붙이다’를 쓴다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"일을 %s.",a:"시킨다",b:"식힌다",e:"‘시키다’는 하게 한다는 뜻이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"끓인 물을 %s.",a:"식힌다",b:"시킨다",e:"‘식히다’는 ‘식다’의 사동사이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"세 %s 되는 둘레.",a:"아름",b:"알음",e:"‘아름’은 두 팔을 벌려 껴안은 둘레의 길이이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"전부터 %s이 있는 사이.",a:"알음",b:"아름",e:"‘알음’은 서로 아는 사이라는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"%s이 힘이다.",a:"앎",b:"암",e:"‘알다’의 명사형은 어간의 원형을 밝혀 ‘앎’으로 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"밥을 %s.",a:"안친다",b:"앉힌다",e:"‘안치다’는 솥에 넣어 끓이려고 하는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"윗자리에 %s.",a:"앉힌다",b:"안친다",e:"‘앉히다’는 ‘앉다’의 사동사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"두 물건의 %s에서 일어난 현상.",a:"어름",b:"얼음",e:"‘어름’은 두 물건이 맞닿은 자리를 뜻한다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"%s이 얼었다.",a:"얼음",b:"어름",e:"‘얼다’의 뜻이 살아 있으므로 어간의 원형을 밝혀 적는다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"%s 오너라.",a:"이따가",b:"있다가",e:"‘이따가’는 조금 지난 뒤에라는 뜻의 부사이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"돈은 %s도 없다.",a:"있다가",b:"이따가",e:"‘있다가’는 ‘있다’의 어간에 ‘-다가’가 붙은 것이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"다친 다리가 %s.",a:"저린다",b:"절인다",e:"‘저리다’는 몸이 쑤시고 감각이 둔한 상태이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"김장 배추를 %s.",a:"절인다",b:"저린다",e:"‘절이다’는 소금 따위를 배어들게 하는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"생선을 %s.",a:"조린다",b:"졸인다",e:"‘조리다’는 양념을 배어들게 바짝 끓이는 것이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"마음을 %s.",a:"졸인다",b:"조린다",e:"‘졸이다’는 속을 태우다시피 초조해한다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"여러 날을 %s.",a:"주렸다",b:"줄였다",e:"‘주리다’는 제대로 먹지 못해 배를 곯는다는 뜻이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"비용을 %s.",a:"줄인다",b:"주린다",e:"‘줄이다’는 적게 한다는 뜻이다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"%s 한 것이 이 모양이다.",a:"하노라고",b:"하느라고",e:"‘-노라고’는 자기 나름대로 한다고 함을 나타낸다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"공부%s 밤을 새웠다.",a:"하느라고",b:"하노라고",e:"‘-느라고’는 앞 절이 뒤 절의 원인임을 나타낸다.",s:"고",lv:1},
+{area:"그밖",h:"제57항",q:"공부%s 모임에 늦었다.",a:"하느라고",b:"하느냐고",e:"앞 절의 사태가 뒤 절의 원인이므로 ‘-느라고’를 쓴다.",s:"교",lv:1},
+{area:"그밖",h:"제57항",q:"공부%s 간다.",a:"하러",b:"하려",e:"‘-(으)러’는 목적을, ‘-(으)려’는 의도를 나타낸다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"서울 %s 한다.",a:"가려",b:"가러",e:"‘-(으)려’는 의도를 나타낸다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"사람%s 그럴 수는 없다.",a:"으로서",b:"으로써",e:"‘(으)로서’는 자격을 나타낸다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"닭%s 꿩을 대신했다.",a:"으로써",b:"으로서",e:"‘(으)로써’는 수단을 나타낸다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"그가 나를 %s 나도 그를 믿는다.",a:"믿으므로",b:"믿음으로",e:"‘-(으)므로’는 까닭을 나타내는 어미이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"그는 %s 산 보람을 느꼈다.",a:"믿음으로써",b:"믿으므로써",e:"‘(-ㅁ, -음)으로(써)’는 수단을 나타내는 조사이다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"나를 %s 집에 있거라.",a:"찾아오느니보다",b:"찾아오는 이보다",e:"어미 ‘-느니보다’는 앞말에 붙여 쓴다.",s:"고",lv:2},
+{area:"그밖",h:"제57항",q:"오는 이가 %s 많다.",a:"가는 이보다",b:"가느니보다",e:"의존 명사 ‘이’가 쓰인 경우이므로 띄어 쓴다.",s:"고",lv:2},
+
+/* ---------- 교과서 생활 사례 ---------- */
+{area:"생활",h:"교과서",q:"아직도 많이 아파? 감기 얼른 %s.",a:"나아",b:"낳아",e:"병이 낫는다는 뜻이므로 ‘낫다’의 활용형 ‘나아’로 적는다. ‘낳다’는 아이를 낳는다는 뜻이다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"완전히 %s 일이 있었는데 만나서 얘기할게.",a:"어이없는",b:"어의없는",e:"일상에서 자주 틀리는 표기로, ‘어이없다’가 바른 표기이다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"이게 대체 %s이죠?",a:"웬일",b:"왠일",e:"‘어찌 된’이라는 뜻의 ‘웬’과 ‘일’이 결합한 말이다. ‘왠’은 잘못된 표기이다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"한글 %s에 맞게 고쳐 썼다.",a:"맞춤법",b:"마춤법",e:"‘마추다’는 비표준어이고 ‘맞추다’가 표준어이므로 그 명사형은 ‘맞춤’으로 적는다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"저녁 메뉴로 %s를 끓였다.",a:"김치찌개",b:"김치찌게",e:"‘찌게’는 ‘찌개’의 잘못된 표기이다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"그렇게 하면 %s 일이야.",a:"안 되는",b:"않되는",e:"‘않-’은 ‘아니하-’의 준말로 어미 앞에 쓰이므로 ‘되다’ 앞에는 부정 부사 ‘안’을 쓰고 띄어 쓴다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"그는 공부를 %s 학생이었다.",a:"안 하던",b:"않하던",e:"‘않-’ 뒤에는 다른 용언의 어간이 올 수 없다. 부사 ‘안’을 쓸 때는 띄어 쓴다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"그는 옷을 잘 입는 %s이다.",a:"멋쟁이",b:"멋장이",e:"기술자에게는 ‘-장이’, 그 외에는 ‘-쟁이’가 붙는 형태를 표준어로 삼는다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"그 사람이 바로 %s.",a:"나예요",b:"나에요",e:"받침이 없는 체언 뒤에서는 ‘이에요’가 ‘예요’로 줄어든다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"다른 사람에게 들은 소식이야. 그가 이사를 %s.",a:"갔대",b:"갔데",e:"‘-대’는 ‘-다고 해’가 줄어든 말로 들은 소식을 전할 때 쓴다. ‘-데’는 직접 경험한 사실을 전할 때 쓴다.",s:"교",lv:1},
+{area:"생활",h:"교과서",q:"어제 가 보니 그 집 음식이 참 %s.",a:"맛있데",b:"맛있대",e:"‘-데’는 과거에 직접 경험한 사실을 전달할 때 쓰며 ‘-더라’의 의미를 나타낸다.",s:"교",lv:2},
+{area:"생활",h:"교과서",q:"‘%s’처럼 띄어 써야 뜻이 분명해진다.",a:"나물 좀 다오",b:"나물좀다오",e:"문장의 각 단어는 띄어 씀을 원칙으로 한다. 붙여 쓰면 ‘나 물 좀 다오’와 구별되지 않는다.",s:"교",lv:1}
+];
+
+
+/* ===== 설정 ===== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz2Yoo6mtJmSFcuxOHnzPCkpv3WkUI0QjK7bCytbi6GuJ2mepTCYZXxvflIH-xPZgO1tA/exec";
+const AREAS = [
+  {k:"소리", n:"소리에 관한 것", d:"제5항 된소리 · 제11항 두음 법칙"},
+  {k:"형태", n:"형태에 관한 것", d:"제19·23·25·27·35항"},
+  {k:"띄어", n:"띄어쓰기",       d:"제2·41·42·43·45·47항"},
+  {k:"그밖", n:"그 밖의 것",     d:"제51·53·54·56·57항"},
+  {k:"생활", n:"교과서 생활 사례", d:"교과서 활동에 나온 표기"}
+];
+/* wrong.png 이 없을 때 쓰는 기본 그림 */
+const FALLBACK_SVG = `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 70a22 22 0 0 1 4-40a24 24 0 0 1 34-18a26 26 0 0 1 44 6a22 22 0 0 1 16 34a20 20 0 0 1-18 30a26 26 0 0 1-40 8a22 22 0 0 1-40-20z"/>
+<text x="86" y="62" font-family="Noto Serif KR, serif" font-size="44" font-weight="700" fill="#111" stroke="none" text-anchor="middle">?</text>
+<circle cx="54" cy="106" r="9"/><circle cx="41" cy="124" r="5.5"/><circle cx="32" cy="137" r="3"/>
+<path d="M128 100q-14-22 6-28q16-4 20 16"/><path d="M212 96q16-20 28-8q10 12-4 26"/>
+<ellipse cx="176" cy="152" rx="62" ry="72"/>
+<ellipse cx="152" cy="150" rx="17" ry="20"/><circle cx="152" cy="152" r="9" fill="#111"/>
+<ellipse cx="204" cy="144" rx="19" ry="22"/><circle cx="204" cy="146" r="11" fill="#111"/>
+<path d="M134 120q20-10 34 2"/><path d="M192 112q18-8 30 6"/>
+<path d="M176 170l-7 13h11"/>
+<path d="M154 202q22-18 44 0"/><path d="M162 210q14 8 30-2"/>
+<path d="M234 122q6 10 0 14q-6-4 0-14"/><path d="M242 142q5 9 0 12q-5-3 0-12"/><path d="M124 142q5 9 0 12q-5-3 0-12"/>
+<path d="M142 220q-30 20-32 56"/><path d="M226 214q26 20 24 62"/>
+<path d="M58 208h80v64"/><path d="M50 272h222"/><path d="M150 262q18-8 28 4"/>
+</svg>`;
+const SEEN_KEY = "vs_matchum_seen_v1";
+const NAME_KEY = "vs_matchum_name";
+const NICK_KEY = "vs_matchum_nick";
+
+let sel = AREAS.map(a=>a.k);
+let qCount = 20;
+let lvSel = 0;      // 0=전체 1=기본만 2=심화만
+let current = [];      // 이번 회차 문항
+let orders  = [];      // 문항별 선택지 좌우 순서
+let answers = [];      // 학생 응답
+let idx = 0;           // 현재 문항 번호
+let waitingNext = false;
+let phase = "q";   // q → (오답이면 img) → exp
+let sent = false;
+let nick = "";
+
+/* ===== 유틸 ===== */
+const $ = s=>document.querySelector(s);
+const shuffle = a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function getSeen(){ try{ return JSON.parse(localStorage.getItem(SEEN_KEY))||[] }catch(e){ return [] } }
+function setSeen(v){ try{ localStorage.setItem(SEEN_KEY, JSON.stringify(v)) }catch(e){} }
+
+POOL.forEach((it,i)=>it.id = i+"|"+it.a);
+
+/* ===== 시작 화면 ===== */
+function drawAreas(){
+  $("#areas").innerHTML = AREAS.map(a=>`
+    <div class="opt ${sel.includes(a.k)?'on':''}" data-k="${a.k}">
+      <div class="box"></div><div><b>${a.n}</b><small>${a.d}</small></div>
+    </div>`).join("");
+  $("#areas").querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+    const k = el.dataset.k;
+    sel.includes(k) ? sel = sel.filter(x=>x!==k) : sel.push(k);
+    drawAreas(); updateCnt();
+  });
+}
+function drawCounts(){
+  $("#counts").innerHTML = [10,15,20,25,30].map(n=>
+    `<button class="chip ${n===qCount?'on':''}" data-n="${n}">${n}문항</button>`).join("");
+  $("#counts").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ qCount = +el.dataset.n; drawCounts(); });
+}
+function drawLevels(){
+  $("#levels").innerHTML = [[0,"전체"],[1,"기본만"],[2,"심화만"]].map(([v,n])=>
+    `<button class="chip ${v===lvSel?'on':''}" data-v="${v}">${n}</button>`).join("");
+  $("#levels").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ lvSel = +el.dataset.v; drawLevels(); updateCnt(); });
+}
+function candidates(){ return POOL.filter(i=>sel.includes(i.area) && (lvSel===0 || i.lv===lvSel)); }
+function updateCnt(){
+  const n = candidates().length;
+  $("#poolCnt").textContent = n;
+  $("#startBtn").disabled = n < 5;
+}
+
+/* ===== 출제 ===== */
+function pick(){
+  const cand = candidates();
+  const seen = getSeen();
+  const fresh = shuffle(cand.filter(i=>!seen.includes(i.id)));
+  const old   = shuffle(cand.filter(i=> seen.includes(i.id)));
+  const order = fresh.concat(old);
+
+  const out = [], usedAns = new Set(), usedHang = {};
+  const want = Math.min(qCount, cand.length);
+  for(const it of order){
+    if(out.length>=want) break;
+    if(usedAns.has(it.a)) continue;
+    const cap = Math.max(2, Math.ceil(want/3));
+    if((usedHang[it.h]||0) >= cap) continue;
+    out.push(it); usedAns.add(it.a); usedHang[it.h] = (usedHang[it.h]||0)+1;
+  }
+  for(const it of order){
+    if(out.length>=want) break;
+    if(out.includes(it) || usedAns.has(it.a)) continue;
+    out.push(it); usedAns.add(it.a);
+  }
+  const keep = Math.floor(cand.length*0.6);
+  let ns = getSeen().concat(out.map(i=>i.id));
+  if(ns.length > keep) ns = ns.slice(ns.length - keep);
+  setSeen(ns);
+
+  return shuffle(out);
+}
+
+/* ===== 시험 진행 ===== */
+function start(){
+  const nm = $("#name").value.trim();
+  const nk = $("#nick").value.trim();
+  if(!nk){ toast("닉네임을 입력해 주세요."); $("#nick").focus(); return; }
+  if(!nm){ toast("이름(실명)도 입력해 주세요."); $("#name").focus(); return; }
+  nick = nk;
+  try{ localStorage.setItem(NAME_KEY, nm); localStorage.setItem(NICK_KEY, nk); }catch(e){}
+
+  current = pick();
+  orders  = current.map(it => Math.random()<0.5 ? [it.a,it.b] : [it.b,it.a]);
+  answers = current.map(()=>null);
+  idx = 0; waitingNext = false; phase = "q"; sent = false;
+
+  $("#setup").style.display="none";
+  $("#result").style.display="none";
+  $("#quiz").style.display="block";
+  $("#hName").textContent = nk;
+  $("#hsub").textContent = (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
+  drawQ();
+  window.scrollTo(0,0);
+}
+
+function drawQ(){
+  const it = current[idx];
+  const stem = esc(it.q).replace("%s",'<span class="blank">&nbsp;?&nbsp;</span>');
+  $("#stage").innerHTML = `
+    <div class="stage">
+      <div class="qhead">
+        <div class="num">${idx+1} / ${current.length}</div>
+        <span class="tag">${esc(it.h)}</span>${it.lv===2?'<span class="tag lv2">심화</span>':""}
+      </div>
+      <p class="stem">${stem}</p>
+      <div class="choices">
+        ${orders[idx].map((o,i)=>`<button class="ch" data-v="${esc(o)}"><span class="kbd">${i+1}</span>${esc(o)}</button>`).join("")}
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>`;
+  $("#stage").querySelectorAll(".ch").forEach(b=>b.onclick=()=>choose(b.dataset.v));
+  phase = "q";
+  progress();
+}
+
+function choose(v){
+  if(answers[idx] !== null) return;
+  const it = current[idx];
+  answers[idx] = v;
+  const ok = v === it.a;
+
+  $("#stage").querySelectorAll(".ch").forEach(b=>{
+    b.disabled = true;
+    if(ok){ if(b.dataset.v === it.a) b.classList.add("ok"); }
+    else if(b.dataset.v === v) b.classList.add("no");   // 오답이면 정답은 아직 숨김
+  });
+  progress();
+
+  if(ok) revealExp();
+  else   showWrongShot();
+}
+
+/* 오답: 그림 먼저 → 한 번 더 누르면 정답·해설 */
+function showWrongShot(){
+  const vd = $("#verdict");
+  vd.innerHTML = `
+    <div class="wrongshot">
+      <div class="imgbox"><img src="wrong.png" alt="틀렸어요"
+        onerror="this.onerror=null;this.outerHTML=FALLBACK_SVG"></div>
+      <div class="wtitle">앗, 틀렸어요</div>
+      <div class="wsub">정답과 해설을 확인해 볼까요?</div>
+      <button class="nextbtn" id="nextBtn">정답 확인하기 →</button>
+      <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 됩니다</div>
+    </div>`;
+  vd.classList.add("show");
+  $("#nextBtn").onclick = e=>{ e.stopPropagation(); advance(); };
+  phase = "img";
+  vd.scrollIntoView({behavior:"smooth", block:"nearest"});
+  setTimeout(()=>{ waitingNext = true; }, 60);
+}
+
+/* 정답·해설 화면 */
+function revealExp(){
+  const it = current[idx];
+  const ok = answers[idx] === it.a;
+  const last = idx === current.length-1;
+
+  $("#stage").querySelectorAll(".ch").forEach(b=>{ if(b.dataset.v === it.a) b.classList.add("ok"); });
+  $("#stage").querySelector(".blank").innerHTML = esc(it.a);
+
+  const vd = $("#verdict");
+  vd.innerHTML = `
+    <div class="vtitle ${ok?'o':'x'}">${ok?'⭕ 정답입니다':'❌ 오답입니다'} · 바른 표기는 ‘${esc(it.a)}’</div>
+    <div class="exp">${esc(it.e)}
+      <span class="src">근거: 한글 맞춤법 ${esc(it.h)}${it.s.includes("교")?" · 교사용 교과서":""}</span></div>
+    <button class="nextbtn" id="nextBtn">${last?'결과 보기 →':'다음 문제 →'}</button>
+    <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 넘어갑니다</div>`;
+  vd.classList.add("show");
+  $("#nextBtn").onclick = e=>{ e.stopPropagation(); advance(); };
+  phase = "exp";
+  vd.scrollIntoView({behavior:"smooth", block:"nearest"});
+  setTimeout(()=>{ waitingNext = true; }, 60);
+}
+
+/* 한 번 더 클릭했을 때 */
+function advance(){
+  if(!waitingNext) return;
+  waitingNext = false;
+  if(phase === "img"){ revealExp(); return; }
+  next();
+}
+
+function next(){
+  if(idx < current.length-1){ idx++; drawQ(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else showResult(grade());
+}
+
+function progress(){
+  const done = answers.filter(a=>a!==null).length;
+  const p = current.length ? done/current.length : 0;
+  $("#ringC").style.strokeDashoffset = 119.4*(1-p);
+  $("#ringT").textContent = Math.round(p*100)+"%";
+  $("#pfill").style.width = (p*100)+"%";
+}
+
+/* 화면 아무 곳 클릭 / Enter·Space 로도 다음 문제 */
+document.addEventListener("click", ()=>{ if(waitingNext) advance(); });
+document.addEventListener("keydown", e=>{
+  if($("#quiz").style.display === "none") return;
+  if(waitingNext && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); advance(); return; }
+  if(answers[idx]===null && (e.key==="1"||e.key==="2")){
+    const b = $("#stage").querySelectorAll(".ch")[+e.key-1];
+    if(b) choose(b.dataset.v);
+  }
+});
+
+/* ===== 채점 & 결과 ===== */
+function grade(){
+  const rows = current.map((it,i)=>({it, my:answers[i], ok:answers[i]===it.a}));
+  const total = rows.length, correct = rows.filter(r=>r.ok).length;
+  const rate = total ? Math.round(correct/total*100) : 0;
+  const byHang = {};
+  rows.forEach(r=>{
+    byHang[r.it.h] = byHang[r.it.h] || {t:0,c:0};
+    byHang[r.it.h].t++; if(r.ok) byHang[r.it.h].c++;
+  });
+  return {rows,total,correct,rate,byHang};
+}
+let lastGrade = null;
+function showResult(g){
+  lastGrade = g;
+  $("#quiz").style.display="none";
+  $("#result").style.display="block";
+  $("#rScore").textContent = g.rate + "점";
+  $("#rSub").textContent = `${nick} · ${g.total}문항 중 ${g.correct}문항 정답`;
+  $("#rBars").innerHTML = Object.entries(g.byHang).sort((a,b)=>a[0].localeCompare(b[0],"ko")).map(([h,v])=>{
+    const p = Math.round(v.c/v.t*100);
+    return `<div class="bar"><span>${esc(h)}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span>${v.c}/${v.t}</span></div>`;
+  }).join("");
+  const wrongs = g.rows.filter(r=>!r.ok);
+  if(wrongs.length){
+    $("#rWrongBox").style.display="block";
+    $("#rWrong").innerHTML = wrongs.map(r=>`
+      <div class="wrongitem">${esc(r.it.q).replace("%s",'<b style="color:var(--gold)">'+esc(r.it.a)+'</b>')}
+        <div class="line">내 답: <s>${esc(r.my||"무응답")}</s> → 바른 표기: <b>${esc(r.it.a)}</b> · ${esc(r.it.h)}</div>
+        <div class="line">${esc(r.it.e)}</div>
+      </div>`).join("");
+  } else $("#rWrongBox").style.display="none";
+  $("#submitBtn").disabled = false;
+  $("#submitBtn").textContent = "결과 제출";
+  window.scrollTo(0,0);
+  if(g.rate===100) celebrate();
+}
+function celebrate(){
+  $("#celeMsg").textContent = nick + " 님, 이대로면 시험도 100점이지. 조금 더 파이팅!";
+  $("#cele").classList.add("on");
+  const colors=["#c9a84c","#6b8f5e","#8aad7a","#4ade80","#a08838"];
+  for(let i=0;i<70;i++){
+    const d=document.createElement("div");
+    d.className="confetti";
+    d.style.left=Math.random()*100+"vw";
+    d.style.background=colors[i%colors.length];
+    d.style.animationDuration=(2+Math.random()*2)+"s";
+    d.style.animationDelay=(Math.random()*.8)+"s";
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),5200);
+  }
+}
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2600); }
+
+/* ===== 제출 ===== */
+function submit(){
+  if(!lastGrade || sent) return;
+  const name = $("#name").value.trim() || "이름없음";
+  const g = lastGrade;
+  if(SCRIPT_URL){
+    const payload = {
+      studentName: name,
+      nickname: nick,
+      title: "비상(박) 한글맞춤법 복습시험",
+      areas: sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
+      totalBlanks: g.total, totalCorrect: g.correct, totalRate: g.rate,
+      sections: Object.entries(g.byHang).map(([h,v])=>({
+        work: h, total: v.t, correct: v.c, rate: Math.round(v.c/v.t*100),
+        wrongs: g.rows.filter(r=>!r.ok && r.it.h===h).map(r=>r.it.a)
+      }))
+    };
+    $("#sendForm").action = SCRIPT_URL;
+    $("#sendData").value = JSON.stringify(payload);
+    $("#sendForm").submit();
+    sent = true;
+    $("#submitBtn").disabled = true;
+    $("#submitBtn").textContent = "제출 완료 ✓";
+    toast("✅ 결과가 제출되었습니다!");
+  } else toast("전송 주소가 설정되지 않았습니다.");
+}
+
+/* ===== 이벤트 ===== */
+$("#allBtn").onclick = ()=>{ sel = sel.length===AREAS.length ? [] : AREAS.map(a=>a.k); drawAreas(); updateCnt(); };
+$("#startBtn").onclick = start;
+$("#againBtn").onclick = ()=>{ start(); toast("새로운 문제를 뽑았습니다."); };
+$("#homeBtn").onclick = ()=>{ $("#result").style.display="none"; $("#quiz").style.display="none"; $("#setup").style.display="flex"; window.scrollTo(0,0); };
+$("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
+$("#submitBtn").onclick = submit;
+$("#name").addEventListener("keydown", e=>{ if(e.key==="Enter") start(); });
+$("#nick").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#name").focus(); });
+
+try{ const n = localStorage.getItem(NAME_KEY); if(n) $("#name").value = n;
+     const k = localStorage.getItem(NICK_KEY); if(k) $("#nick").value = k; }catch(e){}
+drawAreas(); drawLevels(); drawCounts(); updateCnt();
+</script>
+</body>
+</html>
