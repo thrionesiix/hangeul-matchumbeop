@@ -94,6 +94,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
   border:1px solid var(--green-accent);display:flex;align-items:center;font-size:12px;font-weight:700}
 .tag{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:var(--text-secondary)}
 .tag.lv2{border-color:var(--gold);color:var(--gold)}
+.tag.lv1{border-color:var(--green-accent);color:var(--green-light)}
 .stem{font-size:clamp(17px,2.6vw,20px);margin:0 0 22px;line-height:1.85}
 .blank{display:inline-block;min-width:84px;border-bottom:2px solid var(--gold);text-align:center;
   color:var(--gold);font-weight:700;padding:0 8px}
@@ -755,7 +756,8 @@ function drawQ(){
     <div class="stage">
       <div class="qhead">
         <div class="num">${idx+1} / ${current.length}</div>
-        <span class="tag">${esc(it.h)}</span>${it.lv===2?'<span class="tag lv2">심화</span>':""}
+        <span class="tag ${it.lv===2?'lv2':'lv1'}">${it.lv===2?'심화':'기본'}</span>
+        <span class="tag">${esc(it.h)}</span>
       </div>
       <p class="stem">${stem}</p>
       <div class="choices">
