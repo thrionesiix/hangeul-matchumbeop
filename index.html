@@ -190,7 +190,12 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
     <input id="name" class="nameinput" type="text" placeholder="이름 (실명)" style="margin-top:10px" autocomplete="off">
   </div>
 
-  <div class="panel">
+  <div class="panel" id="fixedBox" style="display:none">
+    <h3 id="fixedTitle">선생님이 낸 복습시험</h3>
+    <p class="sub" id="fixedInfo"></p>
+  </div>
+
+  <div class="panel" id="areaPanel">
     <h3>출제 범위</h3>
     <p class="sub">시험 범위에 해당하는 영역을 선택하세요. (복수 선택)</p>
     <div class="grid" id="areas"></div>
@@ -200,13 +205,13 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="lvPanel">
     <h3>난도</h3>
     <p class="sub">심화는 제57항 구별(걷잡다/겉잡다 등), 낯선 어휘, ‘이/히’ 구별처럼 헷갈리는 문항입니다.</p>
     <div class="chips" id="levels"></div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="cntPanel">
     <h3>문항 수</h3>
     <p class="sub">풀 때마다 문제가 새로 뽑힙니다. 최근에 푼 문항은 뒤로 미뤄집니다.</p>
     <div class="chips" id="counts"></div>
@@ -603,6 +608,15 @@ const FALLBACK_SVG = `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/s
 <path d="M142 220q-30 20-32 56"/><path d="M226 214q26 20 24 62"/>
 <path d="M58 208h80v64"/><path d="M50 272h222"/><path d="M150 262q18-8 28 4"/>
 </svg>`;
+/* ── 링크로 전달된 설정 (선생님이 만든 시험 링크) ──
+   ?fix=1        학생은 범위·난도·문항 수를 못 바꿈
+   &a=0,1,3      출제 영역 (AREAS 순번)
+   &lv=0|1|2     난도 (0 전체 / 1 기본 / 2 심화)
+   &n=20         문항 수
+   &t=1차 복습   시험 이름                                        */
+const P = new URLSearchParams(location.search);
+const FIXED = P.get("fix") === "1";
+const EXAM  = (P.get("t") || "").trim();
 const SEEN_KEY = "vs_matchum_seen_v1";
 const NAME_KEY = "vs_matchum_name";
 const NICK_KEY = "vs_matchum_nick";
@@ -657,6 +671,30 @@ function updateCnt(){
   $("#startBtn").disabled = n < 5;
 }
 
+/* 링크 설정 적용 */
+function applyParams(){
+  const a = P.get("a");
+  if(a){
+    const ids = a.split(",").map(Number).filter(i=>AREAS[i]);
+    if(ids.length) sel = ids.map(i=>AREAS[i].k);
+  }
+  if(P.get("lv")!==null) lvSel = Math.max(0, Math.min(2, parseInt(P.get("lv"))||0));
+  if(P.get("n"))         qCount = Math.max(5, Math.min(50, parseInt(P.get("n"))||20));
+  if(EXAM) document.title = EXAM + " · 비상(박) 한글맞춤법 복습시험";
+
+  if(!FIXED) return;
+  ["areaPanel","lvPanel","cntPanel"].forEach(id=>{ const el=$("#"+id); if(el) el.style.display="none"; });
+  $("#fixedBox").style.display = "block";
+  if(EXAM) $("#fixedTitle").textContent = EXAM;
+  const areaNames = sel.map(k=>AREAS.find(x=>x.k===k).n).join(" · ");
+  const lvName = ["전체","기본","심화"][lvSel];
+  $("#fixedInfo").innerHTML =
+    `출제 범위 <b style="color:var(--text-primary)">${areaNames}</b><br>` +
+    `난도 <b style="color:var(--text-primary)">${lvName}</b> · ` +
+    `<b style="color:var(--gold)">${qCount}</b>문항<br>` +
+    `<span style="color:var(--text-dim)">아래에 닉네임과 이름을 입력하고 시작하세요.</span>`;
+}
+
 /* ===== 출제 ===== */
 function pick(){
   const cand = candidates();
@@ -705,7 +743,7 @@ function start(){
   $("#result").style.display="none";
   $("#quiz").style.display="block";
   $("#hName").textContent = nk;
-  $("#hsub").textContent = (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
+  $("#hsub").textContent = (EXAM ? EXAM + " · " : "") + (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
   drawQ();
   window.scrollTo(0,0);
 }
@@ -885,7 +923,7 @@ function submit(){
       studentName: name,
       nickname: nick,
       title: "비상(박) 한글맞춤법 복습시험",
-      areas: sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
+      areas: (EXAM ? "["+EXAM+"] " : "") + sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
       totalBlanks: g.total, totalCorrect: g.correct, totalRate: g.rate,
       sections: Object.entries(g.byHang).map(([h,v])=>({
         work: h, total: v.t, correct: v.c, rate: Math.round(v.c/v.t*100),
@@ -906,6 +944,7 @@ function submit(){
 $("#allBtn").onclick = ()=>{ sel = sel.length===AREAS.length ? [] : AREAS.map(a=>a.k); drawAreas(); updateCnt(); };
 $("#startBtn").onclick = start;
 $("#againBtn").onclick = ()=>{ start(); toast("새로운 문제를 뽑았습니다."); };
+if(FIXED) $("#homeBtn").style.display = "none";
 $("#homeBtn").onclick = ()=>{ $("#result").style.display="none"; $("#quiz").style.display="none"; $("#setup").style.display="flex"; window.scrollTo(0,0); };
 $("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
 $("#submitBtn").onclick = submit;
@@ -914,6 +953,7 @@ $("#nick").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#name").focus
 
 try{ const n = localStorage.getItem(NAME_KEY); if(n) $("#name").value = n;
      const k = localStorage.getItem(NICK_KEY); if(k) $("#nick").value = k; }catch(e){}
+applyParams();
 drawAreas(); drawLevels(); drawCounts(); updateCnt();
 </script>
 </body>
