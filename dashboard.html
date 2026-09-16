@@ -116,7 +116,10 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 
   <div class="panel">
     <h3>학생용 시험 링크 만들기</h3>
-    <p class="sub">범위·난도·문항 수를 정해 링크를 만들면, 학생은 이름과 닉네임만 입력하고 바로 시험을 봅니다. (설정 화면이 보이지 않습니다)</p>
+    <p class="sub">교과서·범위·난도·문항 수를 정해 링크를 만들면, 학생은 이름과 닉네임만 입력하고 바로 시험을 봅니다. (설정 화면이 보이지 않습니다)</p>
+
+    <div class="mkrow"><label>교과서</label>
+      <select id="mkBook"><option>비상(박)</option><option>비상(강)</option></select></div>
 
     <div class="mkrow"><label>시험 이름</label>
       <input id="mkTitle" type="text" placeholder="예: 1차 한글맞춤법 복습시험"></div>
@@ -296,12 +299,16 @@ function detail(s){
 
 
 /* ===== 학생용 링크 만들기 ===== */
-const MK_AREAS = ["소리에 관한 것","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"];
+const BOOKS = {
+  "비상(박)": { page: "",          areas: ["소리에 관한 것","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"] },
+  "비상(강)": { page: "gang.html", areas: ["소리에 관한 것","사이시옷","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"] }
+};
+function mkAreas(){ return BOOKS[$("#mkBook").value].areas; }
 const BASE_KEY = "vs_matchum_base";
-let mkSel = [0,1,2,3,4];
+let mkSel = [];
 
 function drawMkAreas(){
-  $("#mkAreas").innerHTML = MK_AREAS.map((n,i)=>
+  $("#mkAreas").innerHTML = mkAreas().map((n,i)=>
     `<button class="mkchip ${mkSel.includes(i)?'on':''}" data-i="${i}">${esc(n)}</button>`).join("");
   $("#mkAreas").querySelectorAll(".mkchip").forEach(el=>el.onclick=()=>{
     const i = +el.dataset.i;
@@ -322,7 +329,7 @@ function buildLink(){
   q.set("n", $("#mkN").value);
   const ttl = $("#mkTitle").value.trim();
   if(ttl) q.set("t", ttl);
-  const url = base + "?" + q.toString();
+  const url = base + BOOKS[$("#mkBook").value].page + "?" + q.toString();
   $("#mkOut").textContent = url;
   return url;
 }
@@ -334,8 +341,10 @@ $("#mkCopy").onclick = async ()=>{
 $("#mkOpen").onclick = ()=>{ const url = buildLink(); if(url) window.open(url,"_blank"); };
 ["mkTitle","mkBase"].forEach(id=>$("#"+id).addEventListener("input", buildLink));
 ["mkLv","mkN"].forEach(id=>$("#"+id).addEventListener("change", buildLink));
+$("#mkBook").addEventListener("change", ()=>{ mkSel = mkAreas().map((_,i)=>i); drawMkAreas(); buildLink(); });
 try{ $("#mkBase").value = localStorage.getItem(BASE_KEY) || "https://thrionesiix.github.io/hangeul-matchumbeop/"; }
 catch(e){ $("#mkBase").value = "https://thrionesiix.github.io/hangeul-matchumbeop/"; }
+mkSel = mkAreas().map((_,i)=>i);
 drawMkAreas(); buildLink();
 
 if(getUrl()) load(); else $("#setup").style.display="block";
