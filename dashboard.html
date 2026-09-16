@@ -119,7 +119,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     <p class="sub">교과서·범위·난도·문항 수를 정해 링크를 만들면, 학생은 이름과 닉네임만 입력하고 바로 시험을 봅니다. (설정 화면이 보이지 않습니다)</p>
 
     <div class="mkrow"><label>교과서</label>
-      <select id="mkBook"><option>비상(박)</option><option>비상(강)</option></select></div>
+      <select id="mkBook"><option>비상(박)</option><option>비상(강)</option><option>군포중앙고</option></select></div>
 
     <div class="mkrow"><label>시험 이름</label>
       <input id="mkTitle" type="text" placeholder="예: 1차 한글맞춤법 복습시험"></div>
@@ -301,7 +301,8 @@ function detail(s){
 /* ===== 학생용 링크 만들기 ===== */
 const BOOKS = {
   "비상(박)": { page: "",          areas: ["소리에 관한 것","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"] },
-  "비상(강)": { page: "gang.html", areas: ["소리에 관한 것","사이시옷","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"] }
+  "비상(강)": { page: "gang.html", areas: ["소리에 관한 것","사이시옷","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례"] },
+  "군포중앙고": { page: "gunjung.html", areas: ["소리에 관한 것","사이시옷","형태에 관한 것","띄어쓰기","그 밖의 것","교과서 생활 사례","학습지 추가 표기"] }
 };
 function mkAreas(){ return BOOKS[$("#mkBook").value].areas; }
 const BASE_KEY = "vs_matchum_base";
