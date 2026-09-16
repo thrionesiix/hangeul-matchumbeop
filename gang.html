@@ -221,7 +221,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
   <button class="btn gold big" id="startBtn">시험 시작하기 →</button>
 
   <div class="srcnote">
-    ※ 모든 문항의 정답·예문·해설은 <b>비상(박) 공통국어 교사용 교과서</b>, <b>한글 맞춤법(문화체육관광부 고시 제2017-12호)</b>,
+    ※ 모든 문항의 정답·예문·해설은 <b id="srcBook">공통국어 교사용 교과서</b>, <b>한글 맞춤법(문화체육관광부 고시 제2017-12호)</b>,
     <b>한글 맞춤법·표준어 규정 해설(국립국어원)</b>에 실린 조항과 예시에서만 가져왔습니다.
   </div>
 </div>
@@ -958,6 +958,7 @@ try{ const n = localStorage.getItem(NAME_KEY); if(n) $("#name").value = n;
      const k = localStorage.getItem(NICK_KEY); if(k) $("#nick").value = k; }catch(e){}
 $("#brandTitle").textContent = BOOK + " 한글맞춤법 복습시험";
 $("#brandSub").textContent = BOOK_SUB;
+$("#srcBook").textContent = BOOK + " 공통국어 교사용 교과서";
 applyParams();
 drawAreas(); drawLevels(); drawCounts(); updateCnt();
 </script>
