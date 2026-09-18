@@ -95,6 +95,14 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
 .tag{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:var(--text-secondary)}
 .tag.lv2{border-color:var(--gold);color:var(--gold)}
 .tag.lv1{border-color:var(--green-accent);color:var(--green-light)}
+.tag.rv{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.08)}
+#review{display:none}
+.rvcta{display:block;width:100%;margin:0 0 14px;padding:15px;border-radius:12px;border:1px solid #f59e0b;
+  background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(245,158,11,.10));color:#fde68a;font-size:16px;font-weight:700}
+.rvcta:hover{background:linear-gradient(180deg,rgba(245,158,11,.32),rgba(245,158,11,.16))}
+.rvstat{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.rvstat span{padding:7px 14px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,.2);color:var(--text-secondary)}
+.rvstat span b{color:var(--text-primary)}
 .stem{font-size:clamp(17px,2.6vw,20px);margin:0 0 22px;line-height:1.85}
 .blank{display:inline-block;min-width:84px;border-bottom:2px solid var(--gold);text-align:center;
   color:var(--gold);font-weight:700;padding:0 8px}
@@ -261,6 +269,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
       <div class="bars" id="rBars"></div>
     </div>
     <div class="wrongbox" id="rWrongBox">
+      <button class="rvcta" id="reviewBtn">✏️ 틀린 문제만 다시 풀기</button>
       <h3>틀린 문항 다시 보기</h3>
       <div id="rWrong"></div>
     </div>
@@ -268,6 +277,26 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
       <button class="btn gold" id="submitBtn">결과 제출</button>
       <button class="btn" id="againBtn">🔄 새로운 문제 풀기</button>
       <button class="btn ghost" id="homeBtn">범위 다시 고르기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 오답 복습 결과 ============ -->
+<div id="review">
+  <div class="wrap" style="padding-top:36px">
+    <div class="score">
+      <div class="big" id="rvBig">0 / 0</div>
+      <div class="sub" id="rvSub"></div>
+      <div class="rvstat" id="rvStat"></div>
+    </div>
+    <div class="wrongbox" id="rvLeftBox">
+      <button class="rvcta" id="rvAgainBtn">✏️ 남은 문제 다시 풀기</button>
+      <h3>아직 헷갈리는 문항</h3>
+      <div id="rvLeft"></div>
+    </div>
+    <div class="actions">
+      <button class="btn gold" id="rvBackBtn">← 시험 결과로 돌아가기</button>
+      <button class="btn" id="rvNewBtn">🔄 새로운 문제 풀기</button>
     </div>
   </div>
 </div>
@@ -667,6 +696,8 @@ let answers = [];      // 학생 응답
 let idx = 0;           // 현재 문항 번호
 let waitingNext = false;
 let phase = "q";   // q → (오답이면 img) → exp
+let mode = "main"; // main: 시험 / review: 오답 복습
+let reviewRound = 0;
 let sent = false;
 let nick = "";
 
@@ -775,9 +806,11 @@ function start(){
   orders  = current.map(it => Math.random()<0.5 ? [it.a,it.b] : [it.b,it.a]);
   answers = current.map(()=>null);
   idx = 0; waitingNext = false; phase = "q"; sent = false;
+  mode = "main"; reviewRound = 0;
 
   $("#setup").style.display="none";
   $("#result").style.display="none";
+  $("#review").style.display="none";
   $("#quiz").style.display="block";
   $("#hName").textContent = nk;
   $("#hsub").textContent = (EXAM ? EXAM + " · " : "") + (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
@@ -792,6 +825,7 @@ function drawQ(){
     <div class="stage">
       <div class="qhead">
         <div class="num">${idx+1} / ${current.length}</div>
+        ${mode==="review" ? '<span class="tag rv">오답 복습'+(reviewRound>1?' '+reviewRound+'회차':'')+'</span>' : ""}
         <span class="tag ${it.lv===2?'lv2':'lv1'}">${it.lv===2?'심화':'기본'}</span>
         <span class="tag">${esc(it.h)}</span>
       </div>
@@ -856,7 +890,7 @@ function revealExp(){
     <div class="vtitle ${ok?'o':'x'}">${ok?'⭕ 정답입니다':'❌ 오답입니다'} · 바른 표기는 ‘${esc(it.a)}’</div>
     <div class="exp">${esc(it.e)}
       <span class="src">근거: 한글 맞춤법 ${esc(it.h)}${it.s.includes("교")?" · 교사용 교과서":""}</span></div>
-    <button class="nextbtn" id="nextBtn">${last?'결과 보기 →':'다음 문제 →'}</button>
+    <button class="nextbtn" id="nextBtn">${last?(mode==="review"?'복습 결과 보기 →':'결과 보기 →'):'다음 문제 →'}</button>
     <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 넘어갑니다</div>`;
   vd.classList.add("show");
   $("#nextBtn").onclick = e=>{ e.stopPropagation(); advance(); };
@@ -875,6 +909,7 @@ function advance(){
 
 function next(){
   if(idx < current.length-1){ idx++; drawQ(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else if(mode === "review") showReviewResult();
   else showResult(grade());
 }
 
@@ -923,6 +958,7 @@ function showResult(g){
   const wrongs = g.rows.filter(r=>!r.ok);
   if(wrongs.length){
     $("#rWrongBox").style.display="block";
+    $("#reviewBtn").textContent = `✏️ 틀린 ${wrongs.length}문제만 다시 풀기`;
     $("#rWrong").innerHTML = wrongs.map(r=>`
       <div class="wrongitem">${esc(r.it.q).replace("%s",'<b style="color:var(--gold)">'+esc(r.it.a)+'</b>')}
         <div class="line">내 답: <s>${esc(r.my||"무응답")}</s> → 바른 표기: <b>${esc(r.it.a)}</b> · ${esc(r.it.h)}</div>
@@ -934,8 +970,60 @@ function showResult(g){
   window.scrollTo(0,0);
   if(g.rate===100) celebrate();
 }
-function celebrate(){
-  $("#celeMsg").textContent = nick + " 님, 이대로면 시험도 100점이지. 조금 더 파이팅!";
+/* ===== 오답 복습 라운드 ===== */
+function startReview(items){
+  if(!items.length) return;
+  mode = "review";
+  reviewRound++;
+  current = shuffle(items.slice());
+  orders  = current.map(it => Math.random()<0.5 ? [it.a,it.b] : [it.b,it.a]);
+  answers = current.map(()=>null);
+  idx = 0; waitingNext = false; phase = "q";
+  $("#result").style.display="none";
+  $("#review").style.display="none";
+  $("#quiz").style.display="block";
+  $("#hsub").textContent = "✏️ 오답 복습" + (reviewRound>1 ? " " + reviewRound + "회차" : "") + " · " + current.length + "문항";
+  drawQ();
+  window.scrollTo(0,0);
+}
+let reviewLeft = [];
+function showReviewResult(){
+  const total = current.length;
+  reviewLeft = current.filter((it,i)=>answers[i] !== it.a);
+  const fixed = total - reviewLeft.length;
+  $("#quiz").style.display="none";
+  $("#review").style.display="block";
+  $("#rvBig").textContent = reviewLeft.length ? `${fixed} / ${total}` : "🎉 오답 정복!";
+  $("#rvSub").textContent = reviewLeft.length
+    ? `${nick} · 틀렸던 ${total}문항 중 ${fixed}문항을 바로잡았어요`
+    : `${nick} · 틀렸던 문제를 모두 바로잡았어요. 이제 시험 결과를 제출하세요!`;
+  const firstWrong = lastGrade ? lastGrade.rows.filter(r=>!r.ok).length : total;
+  $("#rvStat").innerHTML =
+    `<span>처음 틀린 문항 <b>${firstWrong}</b></span>` +
+    `<span>복습 <b>${reviewRound}</b>회차</span>` +
+    `<span>남은 문항 <b>${reviewLeft.length}</b></span>`;
+  if(reviewLeft.length){
+    $("#rvLeftBox").style.display="block";
+    $("#rvAgainBtn").textContent = `✏️ 남은 ${reviewLeft.length}문제 다시 풀기`;
+    $("#rvLeft").innerHTML = reviewLeft.map(it=>`
+      <div class="wrongitem">${esc(it.q).replace("%s",'<b style="color:var(--gold)">'+esc(it.a)+'</b>')}
+        <div class="line">바른 표기: <b>${esc(it.a)}</b> · ${esc(it.h)}</div>
+        <div class="line">${esc(it.e)}</div>
+      </div>`).join("");
+  } else {
+    $("#rvLeftBox").style.display="none";
+    celebrateReview();
+  }
+  $("#rvBackBtn").textContent = sent ? "← 시험 결과로 돌아가기" : "← 시험 결과로 돌아가 제출하기";
+  window.scrollTo(0,0);
+}
+function celebrateReview(){
+  $("#celeMsg").textContent = nick + " 님, 틀린 문제를 모두 정복했어요! 이제 진짜 내 것이 됐다.";
+  celebrate(true);
+}
+
+function celebrate(keepMsg){
+  if(!keepMsg) $("#celeMsg").textContent = nick + " 님, 이대로면 시험도 100점이지. 조금 더 파이팅!";
   $("#cele").classList.add("on");
   const colors=["#c9a84c","#6b8f5e","#8aad7a","#4ade80","#a08838"];
   for(let i=0;i<70;i++){
@@ -982,6 +1070,10 @@ function submit(){
 $("#allBtn").onclick = ()=>{ sel = sel.length===AREAS.length ? [] : AREAS.map(a=>a.k); drawAreas(); updateCnt(); };
 $("#startBtn").onclick = start;
 $("#againBtn").onclick = ()=>{ start(); toast("새로운 문제를 뽑았습니다."); };
+$("#reviewBtn").onclick = e=>{ e.stopPropagation(); if(lastGrade) startReview(lastGrade.rows.filter(r=>!r.ok).map(r=>r.it)); };
+$("#rvAgainBtn").onclick = e=>{ e.stopPropagation(); startReview(reviewLeft); };
+$("#rvBackBtn").onclick = e=>{ e.stopPropagation(); mode="main"; $("#review").style.display="none"; $("#result").style.display="block"; window.scrollTo(0,0); };
+$("#rvNewBtn").onclick = e=>{ e.stopPropagation(); start(); toast("새로운 문제를 뽑았습니다."); };
 if(FIXED) $("#homeBtn").style.display = "none";
 $("#homeBtn").onclick = ()=>{ $("#result").style.display="none"; $("#quiz").style.display="none"; $("#setup").style.display="flex"; window.scrollTo(0,0); };
 $("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
