@@ -78,7 +78,44 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 #modal{position:fixed;inset:0;background:rgba(5,8,5,.86);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
 #modal.on{display:flex}
 .mbox{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:16px;padding:22px;
-  max-width:560px;width:100%;max-height:82vh;overflow:auto}
+  max-width:780px;width:100%;max-height:88vh;overflow:auto}
+.rp-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 18px}
+.rp-tile{border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px;background:rgba(255,255,255,.02)}
+.rp-tile small{display:block;font-size:11.5px;color:var(--text-muted);margin-bottom:4px}
+.rp-tile b{font-family:'Noto Serif KR',serif;font-size:22px;color:var(--text-primary)}
+.rp-tile b.up{color:#86efac} .rp-tile b.down{color:#fca5a5}
+.rp-sec{margin:18px 0 8px;font-size:14px;color:var(--gold);font-weight:700}
+.rp-chart{position:relative;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 10px 4px;background:#0d140d}
+.rp-chart svg{display:block;width:100%;height:auto}
+.rp-tip{position:absolute;pointer-events:none;background:#0a0e0a;border:1px solid rgba(255,255,255,.3);border-radius:8px;
+  padding:7px 10px;font-size:12px;color:var(--text-primary);display:none;z-index:2;line-height:1.5;max-width:min(320px,calc(100% - 8px))}
+.rp-tip small{color:var(--text-muted)}
+.rp-note{font-size:12px;color:var(--text-dim);margin-top:6px}
+.rp-table{width:100%;border-collapse:collapse;font-size:13px}
+.rp-table th,.rp-table td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left}
+.rp-table th{color:var(--text-muted);font-weight:500;font-size:11.5px}
+.rp-table td.n{text-align:right;font-variant-numeric:tabular-nums}
+.rp-table tr.best td{background:rgba(201,168,76,.10)}
+.dlt-up{color:#86efac} .dlt-down{color:#fca5a5} .dlt-0{color:var(--text-dim)}
+.rp-weak{display:flex;flex-wrap:wrap;gap:8px}
+.rp-actions{margin-top:20px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.cnt-chip{display:inline-block;min-width:34px;text-align:center;padding:2px 8px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.22);font-size:12px;color:var(--text-secondary)}
+@media (max-width:640px){ .rp-tiles{grid-template-columns:1fr 1fr} .rp-table .hide{display:none} }
+@media print{
+  body{background:#fff}
+  body > *:not(#modal){display:none !important}
+  #modal{position:static;display:block !important;background:#fff;padding:0}
+  .mbox{max-width:none;max-height:none;overflow:visible;border:0;background:#fff;color:#111;padding:0}
+  .mbox h2,.rp-sec{color:#6b5410}
+  .mbox .meta,.rp-tile small,.rp-table th,.rp-note{color:#555}
+  .rp-tile{border-color:#ccc;background:#fff} .rp-tile b{color:#111}
+  .rp-chart{background:#fff;border-color:#ccc}
+  .rp-table th,.rp-table td{border-color:#ddd;color:#111}
+  .wchip{color:#111;border-color:#ccc}
+  .bar span{color:#111} .track{background:#eee}
+  .rp-actions{display:none}
+}
 .mbox h2{font-size:20px;color:var(--gold);margin-bottom:4px}
 .mbox .meta{color:var(--text-muted);font-size:12px;margin-bottom:16px}
 .notice{margin-top:24px;padding:14px;border:1px solid rgba(239,68,68,.35);border-radius:12px;
@@ -157,11 +194,11 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 
   <div class="panel">
     <h3>학생별 순위</h3>
-    <p class="sub">행을 누르면 그 학생의 조항별 결과와 오답을 볼 수 있습니다. (같은 학생이 여러 번 응시하면 가장 최근 회차 기준)</p>
-    <table>
-      <thead><tr><th>순위</th><th>이름</th><th class="num">문항</th><th class="num">정답</th><th class="num">정답률</th><th>등급</th><th class="hide">최근 응시</th></tr></thead>
+    <p class="sub">행을 누르면 그 학생의 <b>성장 리포트</b>(회차별 점수 추이·약점 조항·틀린 표기)가 열립니다. 순위와 등급은 가장 최근 회차 기준, ‘성장’은 첫 회 대비 최근 회차 점수 변화입니다.</p>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>순위</th><th>이름</th><th class="num">응시</th><th class="num">최근</th><th class="num">최고</th><th class="num">성장</th><th>등급</th><th class="hide">최근 응시</th></tr></thead>
       <tbody id="rank"></tbody>
-    </table>
+    </table></div>
     <div class="empty" id="rankEmpty">아직 제출된 결과가 없습니다.</div>
   </div>
 
@@ -188,7 +225,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
   <h2 id="mName"></h2>
   <div class="meta" id="mMeta"></div>
   <div id="mBody"></div>
-  <div style="margin-top:18px;text-align:right"><button class="btn ghost" id="mClose">닫기</button></div>
+  <div class="rp-actions"><button class="btn" id="mPrint">🖨 인쇄 · PDF 저장</button><button class="btn ghost" id="mClose">닫기</button></div>
 </div></div>
 
 <script>
@@ -215,6 +252,7 @@ $("#keyBtn").onclick = ()=>{ const v=$("#keyIn").value.trim(); if(!v) return; se
 $("#keyIn").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#keyBtn").click(); });
 $("#lockBtn").onclick = ()=>{ setKey(""); ROWS=[]; render(); showLock("잠갔습니다. 다시 보려면 비밀키를 입력하세요."); };
 $("#mClose").onclick = ()=>$("#modal").classList.remove("on");
+$("#mPrint").onclick = ()=>window.print();
 $("#modal").onclick = e=>{ if(e.target.id==="modal") $("#modal").classList.remove("on"); };
 
 async function load(){
@@ -236,37 +274,64 @@ async function load(){
   $("#refresh").textContent = "↻ 새로고침";
 }
 
-function render(){
-  // 학생별: 가장 최근 응시 회차만 사용
-  const byStu = {};
-  ROWS.forEach(r=>{
-    const s = byStu[r.name] = byStu[r.name] || {name:r.name, nick:"", time:"", rows:[], total:0, correct:0};
-    if(r.nick) s.nick = r.nick;
-    if(String(r.work).indexOf("전체") === 0 || String(r.work).indexOf("【") === 0){
-      s.total = r.total; s.correct = r.correct; s.time = r.time;
-    } else {
-      s.rows.push(r);
-    }
+/* ===== 응시 기록 정리: 한 번 제출 = 이름 + 제출 시각 ===== */
+const isSum = r => String(r.work).indexOf("【")===0 || String(r.work).indexOf("전체")===0;
+function parseTags(s){
+  const m = String(s||"").match(/^\[([^\]]*)\]\s*(?:\[([^\]]*)\])?/);
+  return m ? {book:m[1]||"", exam:m[2]||""} : {book:"", exam:""};
+}
+let STUS = {};
+function buildStudents(){
+  const att = {}; const order = [];
+  ROWS.forEach((r,i)=>{
+    const k = r.name + "||" + r.time;
+    if(!att[k]){ att[k] = {name:r.name, nick:"", time:r.time, idx:i, secs:[], total:0, correct:0, book:"", exam:"", sum:false}; order.push(k); }
+    const a = att[k];
+    if(r.nick) a.nick = r.nick;
+    if(isSum(r)){ a.total=r.total; a.correct=r.correct; a.sum=true; const tg=parseTags(r.wrongs); a.book=tg.book; a.exam=tg.exam; }
+    else a.secs.push(r);
   });
-  const stus = Object.values(byStu).map(s=>{
-    if(!s.total){ s.total = s.rows.reduce((a,b)=>a+b.total,0); s.correct = s.rows.reduce((a,b)=>a+b.correct,0); }
-    if(!s.time && s.rows.length) s.time = s.rows[s.rows.length-1].time;
-    s.rate = s.total ? Math.round(s.correct/s.total*100) : 0;
-    return s;
-  }).sort((a,b)=>b.rate-a.rate || b.total-a.total);
+  const stus = {};
+  order.map(k=>att[k]).forEach(a=>{
+    if(!a.sum){ a.total=a.secs.reduce((x,y)=>x+y.total,0); a.correct=a.secs.reduce((x,y)=>x+y.correct,0); }
+    a.rate = a.total ? Math.round(a.correct/a.total*100) : 0;
+    const s = stus[a.name] = stus[a.name] || {name:a.name, nick:"", attempts:[]};
+    if(a.nick) s.nick = a.nick;
+    s.attempts.push(a);
+  });
+  Object.values(stus).forEach(s=>{
+    s.attempts.sort((x,y)=>x.idx-y.idx).forEach((a,i)=>a.no=i+1);
+    const A = s.attempts;
+    s.count = A.length;
+    s.latest = A[A.length-1];
+    s.first = A[0];
+    s.bestRate = Math.max(...A.map(a=>a.rate));
+    s.avg = Math.round(A.reduce((x,a)=>x+a.rate,0)/A.length);
+    s.delta = s.latest.rate - s.first.rate;
+    s.rate = s.latest.rate;
+  });
+  return stus;
+}
+const deltaHtml = (v, n) => n<2 ? '<span class="dlt-0">–</span>'
+  : v>0 ? `<span class="dlt-up">▲${v}</span>` : v<0 ? `<span class="dlt-down">▼${-v}</span>` : '<span class="dlt-0">0</span>';
 
-  // 요약 카드
+function render(){
+  STUS = buildStudents();
+  const stus = Object.values(STUS).sort((a,b)=>b.rate-a.rate || b.bestRate-a.bestRate || b.count-a.count);
+  const totalAttempts = stus.reduce((x,s)=>x+s.count,0);
+
+  // 요약 카드 (학생별 최근 회차 기준)
   const avg = stus.length ? Math.round(stus.reduce((a,b)=>a+b.rate,0)/stus.length) : 0;
   const high = stus.length ? Math.round(stus.filter(s=>s.rate>=80).length/stus.length*100) : 0;
-  $("#cStu").textContent = stus.length ? stus.length+"명" : "-";
+  $("#cStu").innerHTML = stus.length ? `${stus.length}명<span style="font-size:13px;color:var(--text-muted);margin-left:8px;font-family:'Noto Sans KR',sans-serif">총 ${totalAttempts}회 응시</span>` : "-";
   $("#cAvg").textContent = stus.length ? avg+"%" : "-";
   $("#cHigh").textContent = stus.length ? high+"%" : "-";
 
-  // 조항별 집계
+  // 조항별 집계 (전체 회차)
   const byHang = {};
   ROWS.forEach(r=>{
     const h = String(r.work);
-    if(h.indexOf("전체")===0 || h.indexOf("【")===0 || !h) return;
+    if(isSum(r) || !h) return;
     byHang[h] = byHang[h] || {t:0,c:0};
     byHang[h].t += r.total; byHang[h].c += r.correct;
   });
@@ -279,13 +344,15 @@ function render(){
   $("#rank").innerHTML = stus.map((s,i)=>`
     <tr data-n="${esc(s.name)}">
       <td>${medal(i)}</td><td>${esc(s.name)}${s.nick?` <span style="color:var(--text-muted);font-size:12px">(${esc(s.nick)})</span>`:""}</td>
-      <td class="num">${s.total}</td><td class="num">${s.correct}</td>
+      <td class="num"><span class="cnt-chip">${s.count}회</span></td>
       <td class="num">${s.rate}%</td>
+      <td class="num">${s.bestRate}%</td>
+      <td class="num">${deltaHtml(s.delta, s.count)}</td>
       <td><span class="grade g${grade(s.rate)}">${grade(s.rate)}</span></td>
-      <td class="hide">${esc(s.time||"")}</td>
+      <td class="hide">${esc(s.latest.time||"")}</td>
     </tr>`).join("");
   $("#rankEmpty").style.display = stus.length ? "none" : "block";
-  $("#rank").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>detail(byStu[tr.dataset.n]));
+  $("#rank").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>detail(STUS[tr.dataset.n]));
 
   // 조항별 바
   $("#hangs").innerHTML = hangs.map(x=>`
@@ -297,30 +364,118 @@ function render(){
   // 빈출 오답
   const cnt = {};
   ROWS.forEach(r=>{
-    const h = String(r.work);
-    if(h.indexOf("전체")===0 || h.indexOf("【")===0) return; // 요약 행 제외
-    String(r.wrongs||"").split(",").map(s=>s.trim()).filter(Boolean)
-      .forEach(w=>cnt[w]=(cnt[w]||0)+1);
+    if(isSum(r)) return;
+    String(r.wrongs||"").split(",").map(s=>s.trim()).filter(Boolean).forEach(w=>cnt[w]=(cnt[w]||0)+1);
   });
   const top = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,24);
   $("#wrongs").innerHTML = top.map(([w,n])=>`<span class="wchip">${esc(w)}<b>${n}</b></span>`).join("");
   $("#wrongEmpty").style.display = top.length ? "none" : "block";
 }
 
-function detail(s){
-  $("#mName").textContent = s.nick ? `${s.name} (${s.nick})` : s.name;
-  $("#mMeta").textContent = `${s.total}문항 중 ${s.correct}문항 정답 · ${s.rate}% · ${grade(s.rate)}등급 · ${s.time||""}`;
-  const rows = s.rows.slice().sort((a,b)=>String(a.work).localeCompare(String(b.work),"ko"));
-  $("#mBody").innerHTML = rows.length ? rows.map(r=>{
-    const rate = r.total ? Math.round(r.correct/r.total*100) : 0;
-    return `<div class="bar"><span>${esc(r.work)}</span>
-      <div class="track"><div class="fill ${rate<60?'low':''}" style="width:${rate}%"></div></div>
-      <span>${r.correct}/${r.total}</span></div>
-      ${r.wrongs ? `<div style="font-size:12.5px;color:var(--wrong);margin:-2px 0 8px 96px">오답: ${esc(r.wrongs)}</div>`:""}`;
-  }).join("") : `<div class="empty">조항별 기록이 없습니다.</div>`;
-  $("#modal").classList.add("on");
+/* ===== 회차별 점수 꺾은선 (단일 계열 · 0~100) ===== */
+function scoreChart(A, W){
+  W = W || 700;
+  const H = W < 480 ? 200 : 230, L=40, R=18, T=18, B=34;
+  const iw=W-L-R, ih=H-T-B, n=A.length;
+  const x = i => n===1 ? L+iw/2 : L + iw*i/(n-1);
+  const y = v => T + ih*(1 - v/100);
+  const grid = [0,50,100].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,${v===0?.28:.10})" stroke-width="1"/>
+    <text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#928d82">${v}</text>`).join("");
+  const step = n>12 ? Math.ceil(n/12) : 1;
+  const xl = A.map((a,i)=> (i%step===0 || i===n-1) ? `<text x="${x(i)}" y="${H-12}" text-anchor="middle" font-size="11" fill="#928d82">${a.no}회</text>` : "").join("");
+  const path = A.map((a,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(a.rate).toFixed(1)}`).join(" ");
+  const last = A[n-1];
+  const dots = A.map((a,i)=>`<circle cx="${x(i)}" cy="${y(a.rate)}" r="4.5" fill="#c9a84c" stroke="#0d140d" stroke-width="2"/>`).join("");
+  const hits = A.map((a,i)=>`<circle class="hit" data-i="${i}" cx="${x(i)}" cy="${y(a.rate)}" r="16" fill="transparent" style="cursor:pointer"/>`).join("");
+  const lastLbl = `<text x="${x(n-1)}" y="${Math.max(12, y(last.rate)-12)}" text-anchor="${n===1?'middle':'end'}" font-size="12" font-weight="700" fill="#ece8e0">${last.rate}점</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="회차별 점수 꺾은선">
+    ${grid}${xl}
+    ${n>1?`<path d="${path}" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`:""}
+    ${dots}${lastLbl}${hits}
+  </svg><div class="rp-tip" id="rpTip"></div>`;
+}
+function bindChartTips(A){
+  const wrap = $("#rpChart"); if(!wrap) return;
+  const tip = $("#rpTip");
+  wrap.querySelectorAll(".hit").forEach(c=>{
+    const show = ()=>{
+      const i = +c.dataset.i, a = A[i], prev = i>0 ? A[i-1] : null;
+      const d = prev ? a.rate-prev.rate : null;
+      const dh = d===null ? "" : d>0 ? `<span class="dlt-up">▲${d}</span>` : d<0 ? `<span class="dlt-down">▼${-d}</span>` : '<span class="dlt-0">±0</span>';
+      tip.innerHTML = `<b>${a.no}회차 · ${a.rate}점</b> ${dh}<br><small>${esc(a.time)}</small><br>
+        <small>${esc([a.book,a.exam].filter(Boolean).join(" · "))} · ${a.correct}/${a.total}</small>`;
+      tip.style.display = "block";
+      const wr = wrap.getBoundingClientRect(), cr = c.getBoundingClientRect();
+      let left = cr.left - wr.left + cr.width/2 - tip.offsetWidth/2;
+      left = Math.max(4, Math.min(left, wr.width - tip.offsetWidth - 4));
+      tip.style.left = left + "px";
+      tip.style.top = Math.max(4, cr.top - wr.top - tip.offsetHeight - 6) + "px";
+    };
+    c.addEventListener("mouseenter", show);
+    c.addEventListener("click", show);
+    c.addEventListener("mouseleave", ()=>{ tip.style.display = "none"; });
+  });
 }
 
+/* ===== 학생 성장 리포트 ===== */
+function detail(s){
+  const A = s.attempts;
+  $("#mName").textContent = (s.nick ? `${s.name} (${s.nick})` : s.name) + " · 성장 리포트";
+  $("#mMeta").textContent = `총 ${s.count}회 응시 · 첫 응시 ${s.first.time} · 최근 응시 ${s.latest.time}`;
+
+  const dCls = s.count<2 ? "" : s.delta>0 ? "up" : s.delta<0 ? "down" : "";
+  const dTxt = s.count<2 ? "–" : (s.delta>0?"▲":s.delta<0?"▼":"±") + Math.abs(s.delta) + "점";
+  const tiles = `<div class="rp-tiles">
+    <div class="rp-tile"><small>최근 점수</small><b>${s.rate}점</b></div>
+    <div class="rp-tile"><small>최고 점수</small><b>${s.bestRate}점</b></div>
+    <div class="rp-tile"><small>평균 점수</small><b>${s.avg}점</b></div>
+    <div class="rp-tile"><small>첫 회 대비</small><b class="${dCls}">${dTxt}</b></div>
+  </div>`;
+
+  const chart = `<div class="rp-sec">회차별 점수 추이</div>
+    <div class="rp-chart" id="rpChart">${scoreChart(A)}</div>
+    ${s.count<2 ? '<div class="rp-note">아직 1회만 응시했어요. 2회차부터 점수 변화가 선으로 이어집니다.</div>'
+                : '<div class="rp-note">점에 마우스를 올리면 회차별 상세가 보입니다.</div>'}`;
+
+  const rows = A.map((a,i)=>{
+    const prev = i ? A[i-1] : null;
+    return `<tr class="${a.rate===s.bestRate?'best':''}">
+      <td>${a.no}회</td><td class="hide">${esc(a.time)}</td>
+      <td>${esc([a.book,a.exam].filter(Boolean).join(" · ")||"-")}</td>
+      <td class="n">${a.correct}/${a.total}</td><td class="n"><b>${a.rate}점</b></td>
+      <td class="n">${prev ? deltaHtml(a.rate-prev.rate, 2) : '<span class="dlt-0">–</span>'}</td></tr>`;
+  }).join("");
+  const table = `<div class="rp-sec">회차별 기록</div>
+    <div style="overflow-x:auto"><table class="rp-table">
+      <thead><tr><th>회차</th><th class="hide">제출 시각</th><th>교과서 · 시험</th><th style="text-align:right">정답</th><th style="text-align:right">점수</th><th style="text-align:right">변화</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div class="rp-note">금색 줄은 최고 점수 회차입니다.</div>`;
+
+  // 누적 조항별 · 누적 틀린 표기
+  const hang = {}, wr = {};
+  A.forEach(a=>a.secs.forEach(r=>{
+    hang[r.work] = hang[r.work] || {t:0,c:0};
+    hang[r.work].t += r.total; hang[r.work].c += r.correct;
+    String(r.wrongs||"").split(",").map(x=>x.trim()).filter(Boolean).forEach(w=>wr[w]=(wr[w]||0)+1);
+  }));
+  const hl = Object.entries(hang).map(([h,v])=>({h, rate:v.t?Math.round(v.c/v.t*100):0, t:v.t, c:v.c}))
+    .sort((a,b)=>a.rate-b.rate || b.t-a.t);
+  const weak = `<div class="rp-sec">조항별 누적 정답률 <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(전체 회차 합산 · 낮은 순)</span></div>
+    ${hl.length ? hl.map(x=>`<div class="bar"><span>${esc(x.h)}</span>
+      <div class="track"><div class="fill ${x.rate<60?'low':''}" style="width:${x.rate}%"></div></div>
+      <span>${x.rate}% (${x.c}/${x.t})</span></div>`).join("") : '<div class="empty">조항별 기록이 없습니다.</div>'}`;
+  const wl = Object.entries(wr).sort((a,b)=>b[1]-a[1]);
+  const wrongs = `<div class="rp-sec">틀린 표기 <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(숫자는 틀린 횟수)</span></div>
+    ${wl.length ? `<div class="rp-weak">${wl.map(([w,n])=>`<span class="wchip">${esc(w)}<b>${n}</b></span>`).join("")}</div>`
+                : '<div class="empty">틀린 표기가 없습니다. 👏</div>'}`;
+
+  $("#mBody").innerHTML = tiles + chart + table + weak + wrongs;
+  $("#modal").classList.add("on");
+  const cw = $("#rpChart").clientWidth - 20;           // 창 너비에 맞춰 다시 그림
+  if(cw > 0) $("#rpChart").innerHTML = scoreChart(A, Math.max(280, Math.round(cw)));
+  bindChartTips(A);
+  document.querySelector(".mbox").scrollTop = 0;
+}
 
 /* ===== 학생용 링크 만들기 ===== */
 const BOOKS = {
