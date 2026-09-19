@@ -99,9 +99,43 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .dlt-up{color:#86efac} .dlt-down{color:#fca5a5} .dlt-0{color:var(--text-dim)}
 .rp-weak{display:flex;flex-wrap:wrap;gap:8px}
 .rp-actions{margin-top:20px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.gold-btn{border-color:var(--gold);background:linear-gradient(180deg,#c9a84c,#a08838);color:#1a1405;font-weight:700}
 .cnt-chip{display:inline-block;min-width:34px;text-align:center;padding:2px 8px;border-radius:999px;
   border:1px solid rgba(255,255,255,.22);font-size:12px;color:var(--text-secondary)}
 @media (max-width:640px){ .rp-tiles{grid-template-columns:1fr 1fr} .rp-table .hide{display:none} }
+.note{margin-top:24px;border:1px solid rgba(201,168,76,.45);border-radius:14px;padding:18px;background:rgba(201,168,76,.04)}
+.note h3{margin:0 0 6px;font-size:18px;color:var(--gold);font-family:'Noto Serif KR',serif}
+.note .sub{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.note .sub b{color:var(--text-primary)}
+.ok-mark{color:#86efac;font-weight:700}
+.nh{margin-top:18px;break-inside:avoid}
+.nh-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.nh-no{font-weight:700;color:#7cc4e4;font-size:16px}
+.nh-rule{font-weight:700;color:var(--text-primary);font-size:14px;flex:1;min-width:200px}
+.nh-cnt{font-size:12px;color:#fca5a5;white-space:nowrap}
+.ntable{width:100%;border-collapse:collapse;font-size:14px}
+.ntable td{border:1px solid rgba(255,255,255,.16);padding:9px 12px;vertical-align:top;line-height:1.6}
+.ntable tr.grp td{border-top:2px solid rgba(255,255,255,.34)}
+.ntable td.w{width:30%;text-align:center;background:rgba(255,255,255,.03);font-weight:700;color:var(--text-secondary)}
+.ntable td.w.ok{color:#86efac}
+.ntable td.w.tip{font-weight:500;font-size:12px;color:var(--text-muted)}
+.ntable .nx{display:block;font-size:12px;font-weight:500;color:#fca5a5;margin-top:2px}
+.ntable .ncnt{font-size:11px;color:#fca5a5;font-weight:500}
+.ntable .nw{color:var(--gold)}
+.ntable .expl,.ntable td.expl{display:block;font-size:12.5px;color:var(--text-muted);margin-top:4px}
+.nfoot{margin-top:16px;font-size:12.5px;color:var(--text-secondary);border-top:1px dashed rgba(255,255,255,.2);padding-top:10px}
+@media print{
+  .note{border-color:#c9a84c;background:#fff}
+  .note h3{color:#6b5410} .note .sub,.nfoot{color:#333} .note .sub b{color:#111}
+  .nh-rule{color:#111} .nh-no{color:#1d6fa3} .nh-cnt{color:#b42318}
+  .ntable td{border-color:#bbb;color:#111} .ntable tr.grp td{border-top:2px solid #777}
+  .ntable td.w{background:#f6f6f2;color:#333} .ntable td.w.ok{color:#15803d}
+  .ntable .nx,.ntable .ncnt{color:#b42318} .ntable .nw{color:#8a6a12}
+  .ntable .expl,.ntable td.expl,.ntable td.w.tip{color:#555}
+  .ok-mark{color:#15803d}
+  body.print-note #mBody > :not(#rpNote), body.print-note .mbox > h2, body.print-note .mbox > .meta{display:none !important}
+  body.print-note .note{border:0;padding:0;margin:0}
+}
 @media print{
   body{background:#fff}
   body > *:not(#modal){display:none !important}
@@ -225,9 +259,10 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
   <h2 id="mName"></h2>
   <div class="meta" id="mMeta"></div>
   <div id="mBody"></div>
-  <div class="rp-actions"><button class="btn" id="mPrint">🖨 인쇄 · PDF 저장</button><button class="btn ghost" id="mClose">닫기</button></div>
+  <div class="rp-actions"><button class="btn gold-btn" id="mNote">📌 복습 노트만 인쇄</button><button class="btn" id="mPrint">🖨 리포트 전체 인쇄</button><button class="btn ghost" id="mClose">닫기</button></div>
 </div></div>
 
+<script src="bank.js"></script>
 <script>
 const $ = s=>document.querySelector(s);
 const KEY = "vs_matchum_dash_url";
@@ -253,6 +288,7 @@ $("#keyIn").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#keyBtn").cl
 $("#lockBtn").onclick = ()=>{ setKey(""); ROWS=[]; render(); showLock("잠갔습니다. 다시 보려면 비밀키를 입력하세요."); };
 $("#mClose").onclick = ()=>$("#modal").classList.remove("on");
 $("#mPrint").onclick = ()=>window.print();
+$("#mNote").onclick = printNote;
 $("#modal").onclick = e=>{ if(e.target.id==="modal") $("#modal").classList.remove("on"); };
 
 async function load(){
@@ -417,6 +453,79 @@ function bindChartTips(A){
   });
 }
 
+/* ===== 복습 노트: 틀린 표기를 조항별로 모아 예문·짝·해설과 함께 정리 ===== */
+const hasBank = () => typeof BANK !== "undefined";
+function findItem(h, a){
+  if(!hasBank()) return null;
+  return BANK.find(x=>x.h===h && x.a===a) || BANK.find(x=>x.a===a) || null;
+}
+function partnerOf(it){      // 헷갈린 짝 표기를 정답으로 하는 문항(예문 비교용)
+  if(!hasBank() || !it) return null;
+  return BANK.find(x=>x.h===it.h && x.a===it.b) || null;
+}
+function fillQ(q, w){ return esc(q).replace("%s", `<b class="nw">${esc(w)}</b>`); }
+function hangNo(h){ const m = String(h).match(/\d+/); return m ? +m[0] : 999; }
+
+function reviewNote(s){
+  // 조항별 틀린 단어 모으기 (전체 회차)
+  const byH = {};
+  s.attempts.forEach(a=>a.secs.forEach(r=>{
+    String(r.wrongs||"").split(",").map(x=>x.trim()).filter(Boolean).forEach(w=>{
+      byH[r.work] = byH[r.work] || {};
+      byH[r.work][w] = (byH[r.work][w]||0) + 1;
+    });
+  }));
+  const groups = Object.entries(byH).map(([h,ws])=>({
+      h, words:Object.entries(ws).sort((a,b)=>b[1]-a[1]), total:Object.values(ws).reduce((x,y)=>x+y,0)
+    })).sort((a,b)=>b.total-a.total || hangNo(a.h)-hangNo(b.h));
+
+  const who = s.nick ? `${esc(s.name)}(${esc(s.nick)})` : esc(s.name);
+  if(!groups.length){
+    return `<div class="note" id="rpNote"><h3>📌 ${who} 맞춤법 복습 노트</h3>
+      <div class="sub">지금까지 ${s.count}회 응시에서 틀린 표기가 없습니다. 👏 지금처럼만 하면 됩니다!</div></div>`;
+  }
+  const top = groups[0];
+  const lead = `지금까지 <b>${s.count}회</b> 응시에서 틀린 표기를 조항별로 모았습니다. `
+    + `가장 많이 틀린 조항은 <b>${esc(top.h)}</b>(${top.total}회)입니다. `
+    + `예문을 소리 내어 읽으면서 <span class="ok-mark">✔</span> 표시된 바른 표기를 외워 보세요.`;
+
+  const body = groups.map(g=>{
+    const rule = (typeof HANG_TEXT!=="undefined" && HANG_TEXT[g.h]) ? HANG_TEXT[g.h] : "";
+    const pairMode = g.h === "제57항";          // 뜻을 구별해 적는 말은 짝과 함께 표로
+    const rows = g.words.map(([w,n])=>{
+      const it = findItem(g.h, w);
+      const cnt = n>1 ? ` <span class="ncnt">×${n}</span>` : "";
+      if(!it) return `<tr class="grp"><td class="w ok">✔ ${esc(w)}${cnt}</td><td>틀린 표기로 기록된 말입니다.</td></tr>`;
+      if(pairMode){
+        const p = partnerOf(it);
+        return `<tr class="grp"><td class="w ok">✔ ${esc(it.a)}${cnt}</td><td>${fillQ(it.q, it.a)}</td></tr>
+          <tr><td class="w">${esc(it.b)}</td><td>${p ? fillQ(p.q, p.b) : "—"}</td></tr>
+          <tr><td class="w tip">구별</td><td class="expl">${esc(it.e)}${p && p.e!==it.e ? " " + esc(p.e) : ""}</td></tr>`;
+      }
+      return `<tr class="grp"><td class="w ok">✔ ${esc(it.a)}${cnt}<span class="nx">✘ ${esc(it.b)}</span></td>
+        <td>${fillQ(it.q, it.a)}<span class="expl">${esc(it.e)}</span></td></tr>`;
+    }).join("");
+    return `<div class="nh">
+      <div class="nh-head"><span class="nh-no">${esc(g.h)}</span><span class="nh-rule">${esc(rule)}</span>
+        <span class="nh-cnt">틀린 횟수 ${g.total}</span></div>
+      <table class="ntable">${rows}</table></div>`;
+  }).join("");
+
+  return `<div class="note" id="rpNote">
+    <h3>📌 ${who} 맞춤법 복습 노트</h3>
+    <div class="sub">${lead}</div>
+    ${body}
+    <div class="nfoot">다음 시험 전까지 이 노트의 ✔ 표기를 예문과 함께 세 번씩 읽고, 틀린 문제만 다시 풀기로 확인해 보세요.</div>
+  </div>`;
+}
+function printNote(){
+  document.body.classList.add("print-note");
+  const off = ()=>{ document.body.classList.remove("print-note"); window.removeEventListener("afterprint", off); };
+  window.addEventListener("afterprint", off);
+  window.print();
+  setTimeout(off, 1500);
+}
+
 /* ===== 학생 성장 리포트 ===== */
 function detail(s){
   const A = s.attempts;
@@ -469,7 +578,7 @@ function detail(s){
     ${wl.length ? `<div class="rp-weak">${wl.map(([w,n])=>`<span class="wchip">${esc(w)}<b>${n}</b></span>`).join("")}</div>`
                 : '<div class="empty">틀린 표기가 없습니다. 👏</div>'}`;
 
-  $("#mBody").innerHTML = tiles + chart + table + weak + wrongs;
+  $("#mBody").innerHTML = tiles + chart + table + weak + reviewNote(s);
   $("#modal").classList.add("on");
   const cw = $("#rpChart").clientWidth - 20;           // 창 너비에 맞춰 다시 그림
   if(cw > 0) $("#rpChart").innerHTML = scoreChart(A, Math.max(280, Math.round(cw)));
