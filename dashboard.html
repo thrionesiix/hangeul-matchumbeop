@@ -499,7 +499,7 @@ function reviewNote(s){
       if(pairMode){
         const p = partnerOf(it);
         return `<tr class="grp"><td class="w ok">✔ ${esc(it.a)}${cnt}</td><td>${fillQ(it.q, it.a)}</td></tr>
-          <tr><td class="w">${esc(it.b)}</td><td>${p ? fillQ(p.q, p.b) : "—"}</td></tr>
+          <tr><td class="w">${esc(it.b)}</td><td>${p ? fillQ(p.q, p.a) : '<span class="expl" style="margin:0">(이 표기의 예문은 문항에 없습니다)</span>'}</td></tr>
           <tr><td class="w tip">구별</td><td class="expl">${esc(it.e)}${p && p.e!==it.e ? " " + esc(p.e) : ""}</td></tr>`;
       }
       return `<tr class="grp"><td class="w ok">✔ ${esc(it.a)}${cnt}<span class="nx">✘ ${esc(it.b)}</span></td>
