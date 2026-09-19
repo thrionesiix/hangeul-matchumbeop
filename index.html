@@ -96,6 +96,14 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
 .tag.lv2{border-color:var(--gold);color:var(--gold)}
 .tag.lv1{border-color:var(--green-accent);color:var(--green-light)}
 .tag.rv{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.08)}
+.tag.tm{border-color:#f87171;color:#fca5a5}
+.timer{display:flex;align-items:center;gap:10px;margin:-2px 0 16px}
+.timer .tbar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.timer .tbar i{display:block;height:100%;width:100%;background:var(--gold);border-radius:999px}
+.timer .tnum{min-width:3.2em;text-align:right;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.timer.warn .tbar i{background:var(--wrong)}
+.timer.warn .tnum{color:var(--wrong)}
+.timer.stop .tbar i{opacity:.45}
 #review{display:none}
 .rankbox{background:var(--bg-card);border:1px solid rgba(201,168,76,.45);border-radius:14px;padding:18px;margin-bottom:16px}
 .rkhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -233,6 +241,12 @@ header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-f
     <h3>난도</h3>
     <p class="sub">심화는 제57항 구별(걷잡다/겉잡다 등), 낯선 어휘, ‘이/히’ 구별처럼 헷갈리는 문항입니다.</p>
     <div class="chips" id="levels"></div>
+  </div>
+
+  <div class="panel" id="tmPanel">
+    <h3>시간 제한</h3>
+    <p class="sub">시간 안에 고르지 못하면 오답으로 처리됩니다. 시간 제한 기록은 순위가 따로 매겨집니다.</p>
+    <div class="chips" id="timers"></div>
   </div>
 
   <div class="panel" id="cntPanel">
@@ -668,7 +682,8 @@ const FALLBACK_SVG = `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/s
    &a=0,1,3      출제 영역 (AREAS 순번)
    &lv=0|1|2     난도 (0 전체 / 1 기본 / 2 심화)
    &n=20         문항 수
-   &t=1차 복습   시험 이름                                        */
+   &t=1차 복습   시험 이름
+   &tm=10        문제당 제한 시간(초) — 없으면 시간 제한 없음           */
 const P = new URLSearchParams(location.search);
 const FIXED = P.get("fix") === "1";
 const EXAM  = (P.get("t") || "").trim();
@@ -679,6 +694,8 @@ const NICK_KEY = "vs_matchum_nick";
 let sel = AREAS.map(a=>a.k);
 let qCount = 20;
 let lvSel = 0;      // 0=전체 1=기본만 2=심화만
+let timeLimit = 0;  // 문제당 제한 시간(초), 0=없음
+let tmr = null, tEnd = 0;
 let current = [];      // 이번 회차 문항
 let orders  = [];      // 문항별 선택지 좌우 순서
 let answers = [];      // 학생 응답
@@ -689,6 +706,10 @@ let mode = "main"; // main: 시험 / review: 오답 복습
 let reviewRound = 0;
 let sent = false;
 let nick = "";
+
+/* 두 번째 태그 — 시험 이름 + 시간 제한. 순위는 이 태그가 같은 기록끼리 비교한다 */
+const tmTag = ()=> timeLimit ? "⏱" + timeLimit + "초" : "";
+const rankTag = ()=> [EXAM, tmTag()].filter(Boolean).join(" ");
 
 /* ===== 유틸 ===== */
 const $ = s=>document.querySelector(s);
@@ -721,6 +742,11 @@ function drawLevels(){
     `<button class="chip ${v===lvSel?'on':''}" data-v="${v}">${n}</button>`).join("");
   $("#levels").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ lvSel = +el.dataset.v; drawLevels(); updateCnt(); });
 }
+function drawTimers(){
+  $("#timers").innerHTML = [[0,"없음"],[10,"⏱ 문제당 10초"]].map(([v,n])=>
+    `<button class="chip ${v===timeLimit?'on':''}" data-v="${v}">${n}</button>`).join("");
+  $("#timers").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ timeLimit = +el.dataset.v; drawTimers(); });
+}
 function candidates(){ return POOL.filter(i=>sel.includes(i.area) && (lvSel===0 || i.lv===lvSel)); }
 function updateCnt(){
   const n = candidates().length;
@@ -737,10 +763,11 @@ function applyParams(){
   }
   if(P.get("lv")!==null) lvSel = Math.max(0, Math.min(2, parseInt(P.get("lv"))||0));
   if(P.get("n"))         qCount = Math.max(5, Math.min(50, parseInt(P.get("n"))||20));
+  if(P.get("tm"))        timeLimit = Math.max(0, Math.min(60, parseInt(P.get("tm"))||0));
   document.title = (EXAM ? EXAM + " · " : "") + BOOK + " 한글맞춤법 복습시험";
 
   if(!FIXED) return;
-  ["areaPanel","lvPanel","cntPanel"].forEach(id=>{ const el=$("#"+id); if(el) el.style.display="none"; });
+  ["areaPanel","lvPanel","cntPanel","tmPanel"].forEach(id=>{ const el=$("#"+id); if(el) el.style.display="none"; });
   $("#fixedBox").style.display = "block";
   if(EXAM) $("#fixedTitle").textContent = EXAM;
   const areaNames = sel.map(k=>AREAS.find(x=>x.k===k).n).join(" · ");
@@ -748,7 +775,8 @@ function applyParams(){
   $("#fixedInfo").innerHTML =
     `출제 범위 <b style="color:var(--text-primary)">${areaNames}</b><br>` +
     `난도 <b style="color:var(--text-primary)">${lvName}</b> · ` +
-    `<b style="color:var(--gold)">${qCount}</b>문항<br>` +
+    `<b style="color:var(--gold)">${qCount}</b>문항` +
+    (timeLimit ? ` · <b style="color:#fca5a5">⏱ 문제당 ${timeLimit}초</b>` : "") + `<br>` +
     `<span style="color:var(--text-dim)">아래에 닉네임과 이름을 입력하고 시작하세요.</span>`;
 }
 
@@ -802,7 +830,7 @@ function start(){
   $("#review").style.display="none";
   $("#quiz").style.display="block";
   $("#hName").textContent = nk;
-  $("#hsub").textContent = (EXAM ? EXAM + " · " : "") + (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
+  $("#hsub").textContent = (EXAM ? EXAM + " · " : "") + (timeLimit ? "⏱" + timeLimit + "초 · " : "") + (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") + sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
   drawQ();
   window.scrollTo(0,0);
 }
@@ -818,6 +846,7 @@ function drawQ(){
         <span class="tag ${it.lv===2?'lv2':'lv1'}">${it.lv===2?'심화':'기본'}</span>
         <span class="tag">${esc(it.h)}</span>
       </div>
+      ${timed() ? `<div class="timer" id="timer"><div class="tbar"><i id="tFill"></i></div><span class="tnum" id="tNum">${timeLimit}초</span></div>` : ""}
       <p class="stem">${stem}</p>
       <div class="choices">
         ${orders[idx].map((o,i)=>`<button class="ch" data-v="${esc(o)}"><span class="kbd">${i+1}</span>${esc(o)}</button>`).join("")}
@@ -827,10 +856,38 @@ function drawQ(){
   $("#stage").querySelectorAll(".ch").forEach(b=>b.onclick=()=>choose(b.dataset.v));
   phase = "q";
   progress();
+  startTimer();
+}
+
+/* ===== 시간 제한 (본 시험에만 적용, 오답 복습은 제한 없음) ===== */
+function timed(){ return timeLimit > 0 && mode === "main"; }
+function stopTimer(){ if(tmr){ clearInterval(tmr); tmr = null; } const t = $("#timer"); if(t) t.classList.add("stop"); }
+function startTimer(){
+  if(tmr){ clearInterval(tmr); tmr = null; }
+  if(!timed()) return;
+  tEnd = performance.now() + timeLimit*1000;
+  tick();
+  tmr = setInterval(tick, 100);
+}
+function tick(){
+  const left = Math.max(0, tEnd - performance.now());
+  const f = $("#tFill"), n = $("#tNum"), t = $("#timer");
+  if(f) f.style.width = (left / (timeLimit*1000) * 100) + "%";
+  if(n) n.textContent = Math.ceil(left/1000) + "초";
+  if(t) t.classList.toggle("warn", left <= 3000);
+  if(left <= 0){ stopTimer(); timeUp(); }
+}
+function timeUp(){
+  if(answers[idx] !== null) return;
+  answers[idx] = "";                       // 빈 문자열 = 시간 초과(오답)
+  $("#stage").querySelectorAll(".ch").forEach(b=>b.disabled = true);
+  progress();
+  showWrongShot(true);
 }
 
 function choose(v){
   if(answers[idx] !== null) return;
+  stopTimer();
   const it = current[idx];
   answers[idx] = v;
   const ok = v === it.a;
@@ -847,13 +904,13 @@ function choose(v){
 }
 
 /* 오답: 그림 먼저 → 한 번 더 누르면 정답·해설 */
-function showWrongShot(){
+function showWrongShot(timeout){
   const vd = $("#verdict");
   vd.innerHTML = `
     <div class="wrongshot">
       <div class="imgbox"><img src="wrong.png" alt="틀렸어요"
         onerror="this.onerror=null;this.outerHTML=FALLBACK_SVG"></div>
-      <div class="wtitle">앗, 틀렸어요</div>
+      <div class="wtitle">${timeout ? "⏰ 시간 초과!" : "앗, 틀렸어요"}</div>
       <div class="wsub">정답과 해설을 확인해 볼까요?</div>
       <button class="nextbtn" id="nextBtn">정답 확인하기 →</button>
       <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 됩니다</div>
@@ -876,7 +933,7 @@ function revealExp(){
 
   const vd = $("#verdict");
   vd.innerHTML = `
-    <div class="vtitle ${ok?'o':'x'}">${ok?'⭕ 정답입니다':'❌ 오답입니다'} · 바른 표기는 ‘${esc(it.a)}’</div>
+    <div class="vtitle ${ok?'o':'x'}">${ok?'⭕ 정답입니다':answers[idx]===""?'⏰ 시간 초과':'❌ 오답입니다'} · 바른 표기는 ‘${esc(it.a)}’</div>
     <div class="exp">${esc(it.e)}
       <span class="src">근거: 한글 맞춤법 ${esc(it.h)}${it.s.includes("교")?" · 교사용 교과서":""}</span></div>
     <button class="nextbtn" id="nextBtn">${last?(mode==="review"?'복습 결과 보기 →':'결과 보기 →'):'다음 문제 →'}</button>
@@ -939,7 +996,7 @@ function showResult(g){
   $("#quiz").style.display="none";
   $("#result").style.display="block";
   $("#rScore").textContent = g.rate + "점";
-  $("#rSub").textContent = `${nick} · ${g.total}문항 중 ${g.correct}문항 정답`;
+  $("#rSub").textContent = `${nick} · ${g.total}문항 중 ${g.correct}문항 정답` + (timeLimit ? ` · ⏱ 문제당 ${timeLimit}초` : "");
   $("#rBars").innerHTML = Object.entries(g.byHang).sort((a,b)=>a[0].localeCompare(b[0],"ko")).map(([h,v])=>{
     const p = Math.round(v.c/v.t*100);
     return `<div class="bar"><span>${esc(h)}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span>${v.c}/${v.t}</span></div>`;
@@ -950,7 +1007,7 @@ function showResult(g){
     $("#reviewBtn").textContent = `✏️ 틀린 ${wrongs.length}문제만 다시 풀기`;
     $("#rWrong").innerHTML = wrongs.map(r=>`
       <div class="wrongitem">${esc(r.it.q).replace("%s",'<b style="color:var(--gold)">'+esc(r.it.a)+'</b>')}
-        <div class="line">내 답: <s>${esc(r.my||"무응답")}</s> → 바른 표기: <b>${esc(r.it.a)}</b> · ${esc(r.it.h)}</div>
+        <div class="line">내 답: ${r.my==="" ? '<b style="color:#fca5a5">⏰ 시간 초과</b>' : '<s>'+esc(r.my||"무응답")+'</s>'} → 바른 표기: <b>${esc(r.it.a)}</b> · ${esc(r.it.h)}</div>
         <div class="line">${esc(r.it.e)}</div>
       </div>`).join("");
   } else $("#rWrongBox").style.display="none";
@@ -963,12 +1020,12 @@ function showResult(g){
 /* ===== 순위 (닉네임만) ===== */
 async function loadRank(){
   if(!SCRIPT_URL) { $("#rankBox").style.display="none"; return; }
-  const scope = EXAM ? `‘${esc(EXAM)}’ 응시자` : `${esc(BOOK)} 자유 복습`;
+  const scope = (EXAM ? `‘${esc(EXAM)}’ 응시자` : `${esc(BOOK)} 자유 복습`) + (timeLimit ? `(⏱${timeLimit}초)` : "");
   $("#rankNote").textContent = EXAM
     ? "닉네임만 표시됩니다 · 같은 시험 링크로 푼 학생끼리, 한 사람당 최고 기록으로 비교합니다"
     : "닉네임만 표시됩니다 · 같은 교과서 자유 복습끼리 정답률로 비교합니다(한 사람당 최고 기록)";
   $("#rankList").innerHTML = '<li class="msg">불러오는 중…</li>';
-  const q = new URLSearchParams({ mode:"rank", book:BOOK, exam:EXAM, me:$("#name").value.trim(), nick:nick, t:Date.now() });
+  const q = new URLSearchParams({ mode:"rank", book:BOOK, exam:rankTag(), me:$("#name").value.trim(), nick:nick, t:Date.now() });
   try{
     const j = await (await fetch(SCRIPT_URL + "?" + q.toString())).json();
     if(j.me) $("#rankMe").innerHTML = `${scope} <b>${j.count}</b>명 중 <b>${j.me.rank}등</b> · 내 최고 기록 <b>${j.me.rate}점</b>`;
@@ -1063,7 +1120,7 @@ function submit(){
       studentName: name,
       nickname: nick,
       title: BOOK + " 한글맞춤법 복습시험",
-      areas: "["+BOOK+"] " + (EXAM ? "["+EXAM+"] " : "") + sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
+      areas: "["+BOOK+"] " + (rankTag() ? "["+rankTag()+"] " : "") + sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
       totalBlanks: g.total, totalCorrect: g.correct, totalRate: g.rate,
       sections: Object.entries(g.byHang).map(([h,v])=>({
         work: h, total: v.t, correct: v.c, rate: Math.round(v.c/v.t*100),
@@ -1092,7 +1149,7 @@ $("#rankRefresh").onclick = e=>{ e.stopPropagation(); loadRank(); };
 $("#rvNewBtn").onclick = e=>{ e.stopPropagation(); start(); toast("새로운 문제를 뽑았습니다."); };
 if(FIXED) $("#homeBtn").style.display = "none";
 $("#homeBtn").onclick = ()=>{ $("#result").style.display="none"; $("#quiz").style.display="none"; $("#setup").style.display="flex"; window.scrollTo(0,0); };
-$("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
+$("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ stopTimer(); waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
 $("#submitBtn").onclick = submit;
 $("#name").addEventListener("keydown", e=>{ if(e.key==="Enter") start(); });
 $("#nick").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#name").focus(); });
@@ -1103,7 +1160,7 @@ $("#brandTitle").textContent = BOOK + " 한글맞춤법 복습시험";
 $("#brandSub").textContent = BOOK_SUB;
 $("#srcBook").textContent = BOOK_SRC;
 applyParams();
-drawAreas(); drawLevels(); drawCounts(); updateCnt();
+drawAreas(); drawLevels(); drawCounts(); drawTimers(); updateCnt();
 </script>
 </body>
 </html>

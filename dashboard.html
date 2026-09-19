@@ -216,6 +216,9 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     <div class="mkrow"><label>문항 수</label>
       <select id="mkN"><option>10</option><option>15</option><option selected>20</option><option>25</option><option>30</option></select></div>
 
+    <div class="mkrow"><label>시간 제한</label>
+      <select id="mkTm"><option value="0" selected>없음</option><option value="10">문제당 10초</option></select></div>
+
     <div class="mkrow"><label>기본 주소</label>
       <input id="mkBase" type="text" placeholder="https://[아이디].github.io/[저장소]/"></div>
 
@@ -616,6 +619,7 @@ function buildLink(){
   q.set("a", mkSel.slice().sort((a,b)=>a-b).join(","));
   q.set("lv", $("#mkLv").value);
   q.set("n", $("#mkN").value);
+  if($("#mkTm").value !== "0") q.set("tm", $("#mkTm").value);
   const ttl = $("#mkTitle").value.trim();
   if(ttl) q.set("t", ttl);
   const url = base + BOOKS[$("#mkBook").value].page + "?" + q.toString();
@@ -629,7 +633,7 @@ $("#mkCopy").onclick = async ()=>{
 };
 $("#mkOpen").onclick = ()=>{ const url = buildLink(); if(url) window.open(url,"_blank"); };
 ["mkTitle","mkBase"].forEach(id=>$("#"+id).addEventListener("input", buildLink));
-["mkLv","mkN"].forEach(id=>$("#"+id).addEventListener("change", buildLink));
+["mkLv","mkN","mkTm"].forEach(id=>$("#"+id).addEventListener("change", buildLink));
 $("#mkBook").addEventListener("change", ()=>{ mkSel = mkAreas().map((_,i)=>i); drawMkAreas(); buildLink(); });
 try{ $("#mkBase").value = localStorage.getItem(BASE_KEY) || "https://thrionesiix.github.io/hangeul-matchumbeop/"; }
 catch(e){ $("#mkBase").value = "https://thrionesiix.github.io/hangeul-matchumbeop/"; }
