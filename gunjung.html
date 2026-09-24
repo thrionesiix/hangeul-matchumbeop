@@ -1327,7 +1327,8 @@ function submit(){
       totalBlanks: g.total, totalCorrect: g.correct, totalRate: g.rate,
       sections: Object.entries(g.byHang).map(([h,v])=>({
         work: h, total: v.t, correct: v.c, rate: Math.round(v.c/v.t*100),
-        wrongs: g.rows.filter(r=>!r.ok && r.it.h===h).map(r=>r.it.a)
+        wrongs: g.rows.filter(r=>!r.ok && r.it.h===h).map(r=>r.it.a),
+        corrects: g.rows.filter(r=>r.ok && r.it.h===h).map(r=>r.it.a)
       }))
     };
     $("#sendForm").action = SCRIPT_URL;

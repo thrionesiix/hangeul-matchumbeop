@@ -57,6 +57,10 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .fill{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--green-bright))}
 .fill.low{background:linear-gradient(90deg,#b45309,#ef4444)}
 .wrongs{display:flex;flex-wrap:wrap;gap:8px}
+tr.atr{cursor:pointer}
+tr.atr:hover td{background:rgba(255,255,255,.05)}
+.caret{color:var(--text-muted);font-size:11px}
+tr.adet>td{background:rgba(255,255,255,.02);padding:6px 10px 14px}
 .wchip{padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.2);
   background:rgba(255,255,255,.03);font-size:13px}
 .wchip b{color:var(--wrong);margin-left:6px}
@@ -536,6 +540,29 @@ function printNote(){
 }
 
 /* ===== 학생 성장 리포트 ===== */
+/* 한 회차에서 나온 문항을 조항별로 ✔ 맞힘 / ✘ 틀림 으로 보여 준다.
+   ‘맞은 표기’는 2026-09-24 이후 회차부터 기록되므로, 그 전 회차는 틀린 표기만 표시한다. */
+function splitList(s){ return String(s||"").split(",").map(x=>x.trim()).filter(Boolean); }
+function attemptItems(a){
+  const secs = (a.secs||[]).slice().sort((x,y)=>hangNo(x.work)-hangNo(y.work));
+  if(!secs.length) return '<div class="rp-note">이 회차의 문항 기록이 없습니다.</div>';
+  const hasC = secs.some(r=>splitList(r.corrects).length);
+  const blocks = secs.map(r=>{
+    const ok = splitList(r.corrects), no = splitList(r.wrongs);
+    const line = (w, good) => {
+      const it = findItem(r.work, w);
+      const q = it ? fillQ(it.q, it.a) : '<span class="expl" style="margin:0">(문항을 찾지 못했습니다)</span>';
+      return `<tr><td class="w ${good?'ok':''}">${good?'✔':'✘'} ${esc(w)}</td><td>${q}</td></tr>`;
+    };
+    const rows = ok.map(w=>line(w,true)).concat(no.map(w=>line(w,false))).join("");
+    return `<div class="rp-sec" style="margin-top:14px">${esc(r.work)}
+        <span style="font-weight:400;font-size:12px;color:var(--text-muted)">${r.correct}/${r.total}</span></div>
+      <table class="note-t"><tbody>${rows || '<tr><td colspan="2" class="expl">표기 기록이 없습니다.</td></tr>'}</tbody></table>`;
+  }).join("");
+  const note = hasC ? "" : '<div class="rp-note">이 회차는 맞힌 표기가 기록되기 전이라 틀린 표기만 보입니다.</div>';
+  return note + blocks;
+}
+
 function detail(s){
   const A = s.attempts;
   $("#mName").textContent = (s.nick ? `${s.name} (${s.nick})` : s.name) + " · 성장 리포트";
@@ -557,17 +584,18 @@ function detail(s){
 
   const rows = A.map((a,i)=>{
     const prev = i ? A[i-1] : null;
-    return `<tr class="${a.rate===s.bestRate?'best':''}">
-      <td>${a.no}회</td><td class="hide">${esc(a.time)}</td>
+    return `<tr class="atr ${a.rate===s.bestRate?'best':''}" data-no="${a.no}">
+      <td>${a.no}회 <span class="caret">▸</span></td><td class="hide">${esc(a.time)}</td>
       <td>${esc([a.book,a.exam].filter(Boolean).join(" · ")||"-")}</td>
       <td class="n">${a.correct}/${a.total}</td><td class="n"><b>${a.rate}점</b></td>
-      <td class="n">${prev ? deltaHtml(a.rate-prev.rate, 2) : '<span class="dlt-0">–</span>'}</td></tr>`;
+      <td class="n">${prev ? deltaHtml(a.rate-prev.rate, 2) : '<span class="dlt-0">–</span>'}</td></tr>
+      <tr class="adet" id="adet-${a.no}" style="display:none"><td colspan="6">${attemptItems(a)}</td></tr>`;
   }).join("");
   const table = `<div class="rp-sec">회차별 기록</div>
     <div style="overflow-x:auto"><table class="rp-table">
       <thead><tr><th>회차</th><th class="hide">제출 시각</th><th>교과서 · 시험</th><th style="text-align:right">정답</th><th style="text-align:right">점수</th><th style="text-align:right">변화</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
-    <div class="rp-note">금색 줄은 최고 점수 회차입니다.</div>`;
+    <div class="rp-note">금색 줄은 최고 점수 회차입니다. 회차를 누르면 그 회차에 나온 문항과 정답·오답이 펼쳐집니다.</div>`;
 
   // 누적 조항별 · 누적 틀린 표기
   const hang = {}, wr = {};
@@ -592,6 +620,13 @@ function detail(s){
   const cw = $("#rpChart").clientWidth - 20;           // 창 너비에 맞춰 다시 그림
   if(cw > 0) $("#rpChart").innerHTML = scoreChart(A, Math.max(280, Math.round(cw)));
   bindChartTips(A);
+  $("#mBody").querySelectorAll("tr.atr").forEach(tr=>tr.onclick=()=>{
+    const d = $("#adet-" + tr.dataset.no);
+    if(!d) return;
+    const open = d.style.display !== "none";
+    d.style.display = open ? "none" : "table-row";
+    const c = tr.querySelector(".caret"); if(c) c.textContent = open ? "▸" : "▾";
+  });
   document.querySelector(".mbox").scrollTop = 0;
 }
 
