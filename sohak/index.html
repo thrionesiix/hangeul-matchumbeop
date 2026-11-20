@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0e0a">
+<title>소학언해 복습시험</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#0a0e0a; --bg-card:#111a11; --bg-input:#101a10;
+  --border-row:rgba(255,255,255,.35); --border-div:rgba(255,255,255,.40); --border-outer:rgba(255,255,255,.35);
+  --green-brand:#4a5a3a; --green-accent:#6b8f5e; --green-light:#8aad7a; --green-bright:#4ade80;
+  --gold:#c9a84c; --gold-dim:#a08838;
+  --text-primary:#ece8e0; --text-secondary:#c4bfb4; --text-muted:#928d82; --text-dim:#7a7568;
+  --correct:#22c55e; --wrong:#ef4444;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg-deep);color:var(--text-primary);
+  font-family:'Noto Sans KR',system-ui,sans-serif;word-break:keep-all;line-height:1.6}
+h1,h2,h3,.serif{font-family:'Noto Serif KR',serif}
+button{font-family:inherit;cursor:pointer}
+.wm{position:fixed;inset:0;z-index:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.wm span{font-family:'Noto Serif KR',serif;font-size:min(22vw,230px);font-weight:700;color:#fff;opacity:.045;letter-spacing:.06em}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px 60px}
+
+/* ---------- 시작 화면 ---------- */
+#setup{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-block:48px;max-width:860px}
+.brand{text-align:center;margin-bottom:26px}
+.brand .logo{font-family:'Noto Serif KR',serif;font-size:15px;letter-spacing:.35em;color:var(--green-light)}
+.brand h1{margin:10px 0 6px;font-size:clamp(24px,5vw,34px);color:var(--text-primary)}
+.brand p{margin:0;color:var(--text-secondary);font-size:14px}
+.panel{background:linear-gradient(180deg,#151f15,#0e160e);border:1px solid var(--border-outer);
+  border-radius:16px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06)}
+.panel + .panel{margin-top:14px}
+.panel h3{margin:0 0 4px;font-size:16px;color:var(--gold)}
+.panel .sub{margin:0 0 14px;font-size:13px;color:var(--text-muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid rgba(255,255,255,.22);
+  border-radius:10px;background:rgba(255,255,255,.02);transition:.15s}
+.opt:hover{border-color:var(--green-accent)}
+.opt.on{background:var(--green-brand);border-color:var(--green-accent)}
+.box{flex:0 0 18px;height:18px;margin-top:3px;border:1px solid rgba(255,255,255,.3);border-radius:4px;position:relative}
+.opt.on .box{border-color:var(--green-accent)}
+.opt.on .box::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid var(--green-light);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.opt b{display:block;font-size:14px;font-weight:500}
+.opt small{color:var(--text-muted);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.22);
+  background:transparent;color:var(--text-secondary);font-size:14px}
+.chip.on{background:var(--green-brand);border-color:var(--green-accent);color:var(--text-primary)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap}
+.count{font-size:13px;color:var(--text-secondary)}
+.count b{color:var(--gold);font-size:17px}
+.nameinput{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,.25);
+  background:var(--bg-input);color:var(--text-primary);font-size:16px;font-family:inherit}
+.nameinput::placeholder{color:var(--text-dim)}
+.btn{padding:12px 22px;border-radius:10px;border:1px solid var(--green-accent);
+  background:var(--green-brand);color:var(--text-primary);font-size:15px;font-weight:500;transition:.15s}
+.btn:hover{background:#56693f}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.25);color:var(--text-secondary)}
+.btn.ghost:hover{background:rgba(255,255,255,.06)}
+.btn.gold{background:linear-gradient(180deg,var(--gold),var(--gold-dim));border-color:var(--gold);color:#1a1405;font-weight:700}
+.btn.gold:hover{background:linear-gradient(180deg,#d8b95c,#b39a3f)}
+.btn.big{width:100%;padding:16px;font-size:17px;margin-top:16px}
+
+/* ---------- 헤더 ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(10,14,10,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border-row);padding:10px 0;margin-bottom:22px}
+.hbar{display:flex;align-items:center;gap:12px;max-width:760px;margin:0 auto;padding:0 16px}
+.hbar .t{flex:1;min-width:0}
+.hbar .t b{display:block;font-family:'Noto Serif KR',serif;font-size:15px}
+.hbar .t small{color:var(--text-muted);font-size:12px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ring{position:relative;width:46px;height:46px;flex:0 0 46px}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold)}
+.pbar{height:4px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;margin:10px 16px 0;max-width:760px}
+.pbar div{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--gold));transition:width .3s}
+
+/* ---------- 문항 (한 문제씩) ---------- */
+.stage{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:16px;padding:24px;
+  animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.qhead{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.num{height:26px;padding:0 11px;border-radius:999px;background:var(--green-brand);
+  border:1px solid var(--green-accent);display:flex;align-items:center;font-size:12px;font-weight:700}
+.tag{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.25);color:var(--text-secondary)}
+.tag.lv2{border-color:var(--gold);color:var(--gold)}
+.tag.lv1{border-color:var(--green-accent);color:var(--green-light)}
+.tag.rv{border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,.08)}
+.tag.tm{border-color:#f87171;color:#fca5a5}
+.timer{display:flex;align-items:center;gap:10px;margin:-2px 0 16px}
+.timer .tbar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.timer .tbar i{display:block;height:100%;width:100%;background:var(--gold);border-radius:999px}
+.timer .tnum{min-width:3.2em;text-align:right;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.timer.warn .tbar i{background:var(--wrong)}
+.timer.warn .tnum{color:var(--wrong)}
+.timer.stop .tbar i{opacity:.45}
+#review{display:none}
+.rankbox{background:var(--bg-card);border:1px solid rgba(201,168,76,.45);border-radius:14px;padding:18px;margin-bottom:16px}
+.rkhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rkhead h3{margin:0;font-size:15px;color:var(--gold)}
+.rkhead button{padding:6px 12px;font-size:12px}
+.rkme{font-size:14px;color:var(--text-secondary);margin-bottom:10px}
+.rkme b{color:var(--gold)}
+.rklist{list-style:none;margin:0;padding:0}
+.rklist li{display:grid;grid-template-columns:40px 1fr 64px;gap:8px;align-items:center;padding:9px 6px;
+  border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}
+.rklist li:last-child{border-bottom:0}
+.rklist li.me{background:rgba(201,168,76,.14);border-radius:8px}
+.rklist li.msg{display:block;color:var(--text-dim)}
+.rklist .rk{font-weight:700;text-align:center}
+.rklist .rt{text-align:right;color:var(--gold);font-weight:700}
+.rknote{margin-top:10px;font-size:11.5px;color:var(--text-dim)}
+.rvcta{display:block;width:100%;margin:0 0 14px;padding:15px;border-radius:12px;border:1px solid #f59e0b;
+  background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(245,158,11,.10));color:#fde68a;font-size:16px;font-weight:700}
+.rvcta:hover{background:linear-gradient(180deg,rgba(245,158,11,.32),rgba(245,158,11,.16))}
+.rvstat{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.rvstat span{padding:7px 14px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,.2);color:var(--text-secondary)}
+.rvstat span b{color:var(--text-primary)}
+.stem{font-size:clamp(17px,2.6vw,20px);margin:0 0 22px;line-height:1.85}
+.blank{display:inline-block;min-width:84px;border-bottom:2px solid var(--gold);text-align:center;
+  color:var(--gold);font-weight:700;padding:0 8px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ch{position:relative;padding:20px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+  background:var(--bg-input);color:var(--text-primary);font-size:18px;font-weight:500;transition:.12s}
+.ch:hover:not(:disabled){border-color:var(--green-accent);background:#16241a;transform:translateY(-2px)}
+.ch .kbd{position:absolute;left:10px;top:8px;font-size:10px;color:var(--text-dim)}
+.ch.ok{border-color:var(--correct);background:rgba(34,197,94,.16);color:#bbf7d0}
+.ch.no{border-color:var(--wrong);background:rgba(239,68,68,.14);color:#fecaca}
+.ch:disabled{cursor:default}
+.wrongshot{text-align:center;animation:fade .2s ease-out}
+.wrongshot .imgbox{background:#fff;border-radius:16px;padding:12px;display:inline-block;max-width:300px;width:100%;
+  box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.wrongshot .imgbox img,.wrongshot .imgbox svg{width:100%;height:auto;display:block}
+.wtitle{font-family:'Noto Serif KR',serif;font-size:22px;color:var(--wrong);margin:16px 0 4px}
+.wsub{font-size:13px;color:var(--text-muted)}
+.verdict{margin-top:18px;display:none}
+.verdict.show{display:block;animation:fade .2s ease-out}
+.vtitle{font-family:'Noto Serif KR',serif;font-size:18px;margin-bottom:8px}
+.vtitle.o{color:var(--correct)}
+.vtitle.x{color:var(--wrong)}
+.exp{padding:14px 16px;border-left:3px solid var(--green-accent);background:rgba(255,255,255,.03);
+  border-radius:0 8px 8px 0;font-size:14px;color:var(--text-secondary)}
+.exp .src{display:block;margin-top:7px;font-size:11.5px;color:var(--text-dim)}
+.nextbtn{width:100%;margin-top:16px;padding:15px;border-radius:12px;border:1px solid var(--gold);
+  background:linear-gradient(180deg,var(--gold),var(--gold-dim));color:#1a1405;font-size:16px;font-weight:700}
+.nexthint{text-align:center;font-size:12px;color:var(--text-dim);margin-top:9px}
+
+/* ---------- 결과 ---------- */
+#result{display:none}
+.score{text-align:center;padding:32px 18px;background:linear-gradient(180deg,#16211a,#0d140d);
+  border:1px solid var(--border-outer);border-radius:16px;margin-bottom:16px}
+.score .big{font-family:'Noto Serif KR',serif;font-size:58px;color:var(--gold);line-height:1.1}
+.score .sub{color:var(--text-secondary);font-size:15px;margin-top:6px}
+.bars{display:grid;gap:8px;margin-top:20px;text-align:left}
+.bar{display:grid;grid-template-columns:96px 1fr 54px;gap:10px;align-items:center;font-size:13px}
+.track{height:9px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--green-bright))}
+.wrongbox{background:var(--bg-card);border:1px solid var(--border-outer);border-radius:14px;padding:18px;margin-bottom:16px}
+.wrongbox h3{margin:0 0 12px;font-size:15px;color:var(--wrong)}
+.wrongitem{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:14px}
+.wrongitem:last-child{border-bottom:0}
+.wrongitem .line{color:var(--text-secondary);font-size:13px;margin-top:5px}
+.wrongitem .line b{color:var(--correct)}
+.wrongitem .line s{color:var(--wrong)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .btn{flex:1;min-width:150px;text-align:center}
+
+/* ---------- 토스트 / 축하 ---------- */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;
+  background:#16241a;border:1px solid var(--green-accent);color:var(--text-primary);
+  padding:12px 20px;border-radius:999px;font-size:14px;z-index:99;transition:.25s;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#cele{position:fixed;inset:0;z-index:98;display:none;align-items:center;justify-content:center;
+  background:rgba(5,8,5,.86);text-align:center;padding:20px}
+#cele.on{display:flex}
+#cele .em{font-size:72px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+#cele h2{font-size:34px;color:var(--gold);margin:12px 0 8px}
+#cele p{color:var(--text-secondary);margin:0 0 20px}
+.confetti{position:fixed;top:-12px;width:9px;height:14px;z-index:97;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.2}}
+
+/* ---------- 하단 ---------- */
+.notice{margin-top:28px;padding:16px;border:1px solid rgba(239,68,68,.35);border-radius:12px;
+  background:rgba(239,68,68,.05);font-size:12px;color:var(--text-muted);line-height:1.75}
+.notice b{color:#fca5a5}
+.srcnote{margin-top:14px;font-size:12px;color:var(--text-dim);line-height:1.8}
+
+@media (max-width:768px){
+  .grid{grid-template-columns:1fr}
+  .choices{grid-template-columns:1fr}
+  .stage{padding:18px}
+  .bar{grid-template-columns:76px 1fr 46px}
+}
+</style><style>
+/* ---------- 고전문법: 단어 이미지와 4지선다 ---------- */
+.wordbox{background:#fff;border-radius:14px;padding:14px 10px;margin:0 0 18px;text-align:center}
+.wordbox img{max-width:100%;max-height:150px;height:auto;display:inline-block}
+.qtext{font-size:clamp(16px,2.4vw,19px);margin:0 0 18px;line-height:1.75;font-weight:500}
+.choices4{display:grid;grid-template-columns:1fr;gap:10px}
+.ch4{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.22);background:var(--bg-input);color:var(--text-primary);
+  font-size:15px;line-height:1.5;transition:.15s}
+.ch4:hover:not(:disabled){border-color:var(--green-accent);background:rgba(107,143,94,.16)}
+.ch4 .kbd{flex:none;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted)}
+.ch4.ok{border-color:var(--correct);background:rgba(34,197,94,.18)}
+.ch4.ok .kbd{border-color:var(--correct);color:var(--correct)}
+.ch4.no{border-color:var(--wrong);background:rgba(239,68,68,.16)}
+.ch4.no .kbd{border-color:var(--wrong);color:var(--wrong)}
+.ch4:disabled{cursor:default;opacity:.95}
+.wrongitem .wimg{background:#fff;border-radius:10px;padding:6px;display:inline-block;margin-bottom:8px}
+.wrongitem .wimg img{max-height:64px;width:auto;display:block}
+</style>
+</head>
+<body>
+<div class="wm"><span>오름</span></div>
+
+<!-- ============ 시작 화면 ============ -->
+<div class="wrap" id="setup">
+  <div class="brand">
+    <div class="logo">[ 오 름 ] 국 어</div>
+    <h1>소학언해 복습시험</h1>
+    <p>고전문법 · 소학언해 30어절</p>
+  </div>
+
+  <div class="panel">
+    <h3>닉네임 만들기</h3>
+    <p class="sub">닉네임은 시험 화면과 순위에 표시됩니다. 이름은 선생님이 결과를 확인할 때 쓰입니다.</p>
+    <input id="nick" class="nameinput" type="text" placeholder="닉네임 (예: 효도왕)" maxlength="16" autocomplete="off">
+    <input id="name" class="nameinput" type="text" placeholder="이름 (실명)" style="margin-top:10px" autocomplete="off">
+  </div>
+
+  <div class="panel" id="fixedBox" style="display:none">
+    <h3 id="fixedTitle">선생님이 낸 복습시험</h3>
+    <p class="sub" id="fixedInfo"></p>
+  </div>
+
+  <div class="panel" id="areaPanel">
+    <h3>출제 범위</h3>
+    <p class="sub">묻고 싶은 문법 요소를 고르세요. (복수 선택)</p>
+    <div class="grid" id="areas"></div>
+    <div class="row">
+      <button class="btn ghost" id="allBtn">전체 선택 / 해제</button>
+      <span class="count"><b id="poolCnt">0</b>문항 중에서 출제</span>
+    </div>
+  </div>
+
+  <div class="panel" id="lvPanel">
+    <h3>난도</h3>
+    <p class="sub">심화는 사라진 글자(ㅿ·ㆁ·ㅸ·ㆆ), 동국정운식 표기, 의미 변화처럼 헷갈리는 문항입니다.</p>
+    <div class="chips" id="levels"></div>
+  </div>
+
+  <div class="panel" id="cntPanel">
+    <h3>문항 수</h3>
+    <p class="sub">풀 때마다 문제가 새로 뽑힙니다. 최근에 푼 문항은 뒤로 미뤄집니다.</p>
+    <div class="chips" id="counts"></div>
+  </div>
+
+  <button class="btn gold big" id="startBtn">시험 시작하기 →</button>
+
+  <div class="srcnote">
+    ※ 모든 문항의 단어와 질문은 <b>[오름] 고전문법 소학언해 복습시험</b> 학습 자료에서 가져왔습니다.
+    단어 이미지는 <b>소학언해</b>(효경 인용 부분)의 어절입니다.
+  </div>
+</div>
+
+<!-- ============ 시험 화면 ============ -->
+<div id="quiz" style="display:none">
+  <header>
+    <div class="hbar">
+      <button class="btn ghost" id="backBtn" style="padding:8px 12px;font-size:13px">← 나가기</button>
+      <div class="t"><b id="hName">소학언해</b><small id="hsub"></small></div>
+      <div class="ring">
+        <svg width="46" height="46"><circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="4"></circle>
+        <circle id="ringC" cx="23" cy="23" r="19" fill="none" stroke="#c9a84c" stroke-width="4" stroke-linecap="round"
+          stroke-dasharray="119.4" stroke-dashoffset="119.4"></circle></svg>
+        <span id="ringT">0%</span>
+      </div>
+    </div>
+    <div class="pbar" style="margin-left:auto;margin-right:auto"><div id="pfill" style="width:0"></div></div>
+  </header>
+
+  <div class="wrap">
+    <div id="stage"></div>
+    <div class="notice">
+      본 자료는 오직 <b>[오름] 국어</b> 학원 수강생들의 성적 향상을 위해 제작된 비매품입니다.
+      본 자료를 외부로 유출하거나 무단 배포하는 행위는 학원과 동료 수강생들에게 심각한 피해를 주는 범죄 행위입니다.
+      무단 배포 적발 시, 즉각적인 퇴원 조치는 물론, 유출로 인한 경영상 손실에 대해 <b>강력한 법적 조치</b>를 취할 예정입니다.
+    </div>
+  </div>
+</div>
+
+<!-- ============ 결과 화면 ============ -->
+<div id="result">
+  <div class="wrap" style="padding-top:36px">
+    <div class="score">
+      <div class="big" id="rScore">0점</div>
+      <div class="sub" id="rSub">0 / 0 문항</div>
+      <div class="bars" id="rBars"></div>
+    </div>
+    <div class="rankbox" id="rankBox">
+      <div class="rkhead"><h3>🏆 순위</h3><button class="btn ghost" id="rankRefresh">↻ 새로고침</button></div>
+      <div class="rkme" id="rankMe"></div>
+      <ol class="rklist" id="rankList"></ol>
+      <div class="rknote" id="rankNote">닉네임만 표시됩니다 · 한 사람당 최고 기록 1개로 비교합니다</div>
+    </div>
+    <div class="wrongbox" id="rWrongBox">
+      <button class="rvcta" id="reviewBtn">✏️ 틀린 문제만 다시 풀기</button>
+      <h3>틀린 문항 다시 보기</h3>
+      <div id="rWrong"></div>
+    </div>
+    <div class="actions">
+      <button class="btn gold" id="submitBtn">결과 제출</button>
+      <button class="btn" id="againBtn">🔄 새로운 문제 풀기</button>
+      <button class="btn ghost" id="homeBtn">범위 다시 고르기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 오답 복습 결과 ============ -->
+<div id="review">
+  <div class="wrap" style="padding-top:36px">
+    <div class="score">
+      <div class="big" id="rvBig">0 / 0</div>
+      <div class="sub" id="rvSub"></div>
+      <div class="rvstat" id="rvStat"></div>
+    </div>
+    <div class="wrongbox" id="rvLeftBox">
+      <button class="rvcta" id="rvAgainBtn">✏️ 남은 문제 다시 풀기</button>
+      <h3>아직 헷갈리는 문항</h3>
+      <div id="rvLeft"></div>
+    </div>
+    <div class="actions">
+      <button class="btn gold" id="rvBackBtn">← 시험 결과로 돌아가기</button>
+      <button class="btn" id="rvNewBtn">🔄 새로운 문제 풀기</button>
+    </div>
+  </div>
+</div>
+
+<div class="cele" id="cele"><div class="celebox"><div class="emo">🎉</div>
+  <div class="msg" id="celeMsg"></div>
+  <button class="btn gold" onclick="document.getElementById('cele').classList.remove('on')">계속</button></div></div>
+<div class="toast" id="toast"></div>
+<iframe name="sink" id="sink" style="display:none"></iframe>
+<form id="sendForm" method="POST" target="sink" style="display:none"><input type="hidden" name="data" id="sendData"></form>
+
+<script>
+/* =======================================================
+   고전문법 — 소학언해 복습시험
+   문항: POOL = [{w, area, q, o[4], k, e, lv}]  (w = 어절 번호, 이미지 images/wNN.png)
+   ======================================================= */
+/* 고전문법 문항 은행 — build.py 가 _sources/items_*.json 에서 생성 */
+const POOL = [
+{w:1,area:"의미",q:"1번째 어절 '孔공子ᄌᆡ'의 뜻으로 알맞은 것은?",o:["공자가", "공자의", "공자에게", "공자를"],k:0,e:"'子'의 한자음 'ᄌᆞ'에 주격 조사 'ㅣ'가 붙어 'ᄌᆡ'가 되었다. 문장의 주어이다.",lv:1},
+{w:1,area:"문법",q:"1번째 어절 '孔공子ᄌᆡ'에서 주격 조사는 어떤 모습으로 나타나 있는가?",o:["앞 한자음의 모음에 'ㅣ'가 합쳐져 있다", "'이'가 따로 한 글자로 붙어 있다", "'가'가 따로 한 글자로 붙어 있다", "겉으로는 전혀 드러나 있지 않다"],k:0,e:"모음으로 끝난 말 뒤에서는 주격 조사가 'ㅣ'로 나타나 앞 글자에 합쳐 적힌다. 'ᄌᆞ + ㅣ → ᄌᆡ'이다.",lv:2},
+{w:1,area:"변화",q:"1번째 어절 '孔공子ᄌᆡ'를 통해 알 수 있는 사실로 알맞은 것은?",o:["주격 조사 '가'는 아직 쓰이지 않았다", "주격 조사 '가'가 이미 널리 쓰였다", "주격 조사가 '이' 하나로 통일되었다", "주격 조사를 적지 않는 것이 원칙이었다"],k:0,e:"주격 조사 '가'는 뒷시기에 나타난다. 16세기까지는 '이 / ㅣ / 드러나지 않는 형태'만 쓰였다.",lv:2},
+{w:1,area:"표기",q:"1번째 어절 '孔공子ᄌᆡ'의 한자음 표기에 대한 설명으로 알맞은 것은?",o:["현실 한자음을 그대로 적었다", "동국정운식 한자음으로 적었다", "한자음에 받침 'ㅇ'을 덧붙여 적었다", "한자음을 한글로 적지 않았다"],k:0,e:"'공', 'ᄌᆞ'처럼 당시에 실제로 읽던 소리를 적었다. 받침 소리가 없는 한자에 형식적으로 'ㅇ·ㆁ'을 붙이던 동국정운식 표기는 쓰이지 않았다.",lv:2},
+{w:2,area:"의미",q:"2번째 어절 '曾증子ᄌᆞᄃᆞ려'의 뜻으로 알맞은 것은?",o:["증자에게", "증자와 함께", "증자의", "증자처럼"],k:0,e:"'-ᄃᆞ려'는 말을 건네는 상대를 나타내는 조사로, 현대어의 '-에게·-더러'에 해당한다.",lv:1},
+{w:2,area:"문법",q:"2번째 어절 '曾증子ᄌᆞᄃᆞ려'에 쓰인 조사의 구체적인 이름은?",o:["상대를 나타내는 부사격 조사", "견줌을 나타내는 부사격 조사", "소유를 나타내는 관형격 조사", "함께함을 나타내는 접속 조사"],k:0,e:"'-ᄃᆞ려'는 말을 건네는 상대를 나타내는 부사격 조사이다. 높임의 대상에게는 '-ᄭᅴ'를 썼다.",lv:2},
+{w:3,area:"의미",q:"3번째 어절 '닐러'의 뜻으로 알맞은 것은?",o:["일러, 말하여", "이르러, 다다라", "읽어, 소리 내어", "날아, 날아올라"],k:0,e:"기본형은 '니르다(이르다, 말하다)'이다. 어간에 연결 어미 '-어'가 붙었다.",lv:1},
+{w:3,area:"변화",q:"3번째 어절 '닐러'에 대한 설명으로 알맞은 것은?",o:["15세기에는 '닐어'였다가 16세기에 나타난 형태", "15세기부터 줄곧 '닐러'로만 적어 오던 형태", "16세기에 들어와 새로 만들어진 낱말의 형태", "한자어에서 들어온 말을 한글로 옮긴 형태"],k:0,e:"15세기에는 '닐어'로 적었으나, 이 시기에 '닐러' 형태가 나타나기 시작한다. 뒷시기에 '이르다'의 '르' 불규칙 활용으로 이어진다.",lv:2},
+{w:3,area:"음운",q:"3번째 어절 '닐러'의 첫소리 '니-'를 통해 알 수 있는 사실은?",o:["두음 법칙이 아직 적용되지 않았다", "두음 법칙이 이미 적용되고 있었다", "구개음화가 이미 일어난 뒤였다", "된소리되기가 이미 일어난 뒤였다"],k:0,e:"현대 국어라면 두음 법칙에 따라 '이르다'로 적지만, 당시에는 'ㄴ'을 그대로 적어 '니르다'로 썼다.",lv:2},
+{w:4,area:"의미",q:"4번째 어절 'ᄀᆞᆯᄋᆞ샤ᄃᆡ'의 뜻으로 알맞은 것은?",o:["말씀하시되", "가르치시되", "가리키시되", "감추시되"],k:0,e:"'ᄀᆞᆯ다(가로다, 말하다)'에 주체 높임 '-ᄋᆞ샤-'와 연결 어미 '-ᄃᆡ'가 붙었다.",lv:1},
+{w:4,area:"문법",q:"4번째 어절 'ᄀᆞᆯᄋᆞ샤ᄃᆡ'에 쓰인 '-샤-'에 대한 설명으로 알맞은 것은?",o:["모음 어미 앞에 쓰인 주체 높임 선어말 어미", "자음 어미 앞에 쓰인 주체 높임 선어말 어미", "듣는 이를 높이는 상대 높임 선어말 어미", "목적어를 높이는 객체 높임 선어말 어미"],k:0,e:"주체 높임 선어말 어미는 자음 어미 앞에서 '-시-', 모음 어미 앞에서 '-샤-'로 나타난다. 15세기와 같은 모습이다.",lv:2},
+{w:4,area:"표기",q:"4번째 어절 'ᄀᆞᆯᄋᆞ샤ᄃᆡ'는 어떤 방식으로 적었는가?",o:["받침을 뒤로 넘기지 않은 끊어적기", "받침을 뒤로 넘겨 적은 이어적기", "받침을 두 번 거듭 적은 거듭적기", "소리와 무관하게 적은 표의적 표기"],k:0,e:"'ᄀᆞᆯ-'의 받침 'ㄹ'을 뒤로 넘기지 않고 그대로 두어 'ᄀᆞᆯᄋᆞ샤ᄃᆡ'로 적었다. 이를 끊어적기(분철)라 한다.",lv:1},
+{w:5,area:"의미",q:"5번째 어절 '몸이며'의 뜻으로 알맞은 것은?",o:["몸이며, 몸과", "몸에서, 몸으로부터", "몸처럼, 몸같이", "몸이야, 몸이라야"],k:0,e:"'몸'에 접속 조사 '-이며'가 붙어 뒤의 말과 나란히 이어 준다.",lv:1},
+{w:5,area:"표기",q:"5번째 어절 '몸이며'는 어떤 방식으로 적었는가?",o:["받침을 그대로 둔 끊어적기", "받침을 뒤로 넘긴 이어적기", "받침을 두 번 거듭 적은 표기", "받침을 아예 적지 않은 표기"],k:0,e:"'몸 + 이며'에서 받침 'ㅁ'을 뒤로 넘겨 '모미며'로 적지 않고 '몸이며'로 적었다. 16세기에는 이런 끊어적기가 늘어난다.",lv:1},
+{w:6,area:"의미",q:"6번째 어절 '얼굴이며'의 '얼굴'이 당시에 뜻하던 것은?",o:["몸 전체의 형체", "눈·코·입이 있는 낯", "겉으로 드러난 표정", "사람의 성품과 됨됨이"],k:0,e:"당시의 '얼굴'은 몸 전체의 형체를 뜻했다. 지금처럼 '낯'만 가리키게 된 것은 뒷시기의 일이다.",lv:1},
+{w:6,area:"변화",q:"'얼굴'이 '형체'에서 오늘날의 뜻으로 바뀐 것은 어떤 변화인가?",o:["의미의 축소", "의미의 확대", "의미의 이동", "의미의 상승"],k:0,e:"몸 전체를 가리키던 말이 그중 일부인 '낯'만 가리키게 되었으므로 의미가 좁아진 축소이다.",lv:2},
+{w:6,area:"표기",q:"6번째 어절 '얼굴이며'의 표기 방식으로 알맞은 것은?",o:["끊어적기", "이어적기", "거듭적기", "띄어적기"],k:0,e:"받침 'ㄹ'을 뒤로 넘겨 '얼구리며'로 적지 않고 형태를 밝혀 '얼굴이며'로 적었다.",lv:1},
+{w:7,area:"의미",q:"7번째 어절 '머리털이며'의 뜻으로 알맞은 것은?",o:["머리털이며, 머리털과", "머리맡이며, 머리맡과", "머리끝이며, 머리끝과", "머릿결이며, 머릿결과"],k:0,e:"'머리털'에 접속 조사 '-이며'가 붙은 말이다.",lv:1},
+{w:7,area:"표기",q:"7번째 어절 '머리털이며'의 표기 방식으로 알맞은 것은?",o:["끊어적기", "이어적기", "거듭적기", "8종성법"],k:0,e:"'머리털 + 이며'에서 받침 'ㄹ'을 넘기지 않고 '머리털이며'로 적은 끊어적기이다.",lv:1},
+{w:8,area:"의미",q:"8번째 어절 '술흔'의 뜻으로 알맞은 것은?",o:["살은, 살갗은", "술은, 마시는 술은", "숨은, 호흡은", "손은, 두 손은"],k:0,e:"'살ㅎ'은 '살갗·피부'를 뜻하는 ㅎ 종성 체언이다. 보조사 '-은'이 붙어 '술흔'이 되었다.",lv:1},
+{w:8,area:"음운",q:"8번째 어절 '술흔'에서 'ㅎ'이 드러난 까닭으로 알맞은 것은?",o:["'살ㅎ'이 ㅎ을 받침으로 가진 체언이기 때문", "보조사의 본래 형태가 '흔'이었기 때문", "거센소리되기가 일어나는 자리이기 때문", "사잇소리가 덧나 가운데 끼어들었기 때문"],k:0,e:"'살ㅎ'처럼 조사와 만날 때 'ㅎ'이 드러나는 체언을 ㅎ 종성 체언이라 한다. 16세기에도 15세기와 같은 모습으로 남아 있었다.",lv:2},
+{w:8,area:"음운",q:"ㅎ 종성 체언에 대한 설명으로 알맞은 것은?",o:["'암탉·살코기'처럼 현대 국어에 흔적이 남아 있다", "현대 국어에는 그 흔적이 전혀 남아 있지 않다", "현대 국어에서도 'ㅎ'을 밝혀 그대로 적는다", "16세기에 이미 자취를 감춘 현상이다"],k:0,e:"'살ㅎ + 고기 > 살코기', '암ㅎ + 둙 > 암탉'처럼 몇몇 낱말에 'ㅎ'의 흔적이 남아 있다.",lv:2},
+{w:9,area:"의미",q:"9번째 어절 '父부母모ᄭᅴ'의 뜻으로 알맞은 것은?",o:["부모께", "부모와", "부모의", "부모보다"],k:0,e:"'-ᄭᅴ'는 높임의 대상에게 쓰는 부사격 조사로, 현대어의 '-께'에 해당한다.",lv:1},
+{w:9,area:"문법",q:"9번째 어절 '父부母모ᄭᅴ'의 '-ᄭᅴ'와 2번째 어절의 '-ᄃᆞ려'는 어떻게 다른가?",o:["'-ᄭᅴ'는 높일 대상에, '-ᄃᆞ려'는 그렇지 않은 대상에", "'-ᄭᅴ'는 사물에, '-ᄃᆞ려'는 사람에 쓰는 조사이다", "'-ᄭᅴ'는 주어에, '-ᄃᆞ려'는 목적어에 쓰는 조사이다", "둘은 뜻이 같아 아무 데나 바꾸어 쓸 수 있었다"],k:0,e:"둘 다 상대를 나타내는 부사격 조사이지만, 높임의 대상에게는 '-ᄭᅴ'를 쓴다. 여기서는 '父母'를 높였다.",lv:2},
+{w:10,area:"의미",q:"10번째 어절 '받ᄌᆞ온'의 뜻으로 알맞은 것은?",o:["받은", "받을", "바친", "바칠"],k:0,e:"'받-'에 객체 높임 '-ᄌᆞ오-'와 관형사형 어미 '-ㄴ'이 붙었다. '父母께 받은'이라는 뜻이다.",lv:1},
+{w:10,area:"문법",q:"10번째 어절 '받ᄌᆞ온'의 '-ᄌᆞ오-'는 무엇을 높이는가?",o:["목적어나 부사어로 나타난 대상", "문장의 주어로 나타난 대상", "말을 듣고 있는 상대방", "말하고 있는 글쓴이 자신"],k:0,e:"'-ᄌᆞ오-'는 객체 높임 선어말 어미로, 여기서는 부사어 '父母ᄭᅴ'의 '父母'를 높인다.",lv:2},
+{w:10,area:"문법",q:"중세 국어의 객체 높임 선어말 어미에 대한 설명으로 알맞은 것은?",o:["앞 어간의 끝소리에 따라 형태가 달라졌다", "뒤에 오는 어미의 종류에 따라 달라졌다", "언제나 한 가지 형태로만 쓰이고 있었다", "현대 국어에도 같은 형태가 남아 있다"],k:0,e:"어간 끝소리가 'ㄷ·ㅌ·ㅈ·ㅊ'이면 'ㅈ'으로 시작하는 형태가, 'ㅂ·ㄱ·ㅅ·ㅎ'이면 'ㅅ'으로 시작하는 형태가 쓰였다. '받-' 뒤에 '-ᄌᆞ오-'가 온 것도 그 때문이다.",lv:2},
+{w:10,area:"표기",q:"10번째 어절 '받ᄌᆞ온'의 표기 방식으로 알맞은 것은?",o:["받침을 그대로 둔 끊어적기", "받침을 뒤로 넘긴 이어적기", "받침을 거듭 적은 표기", "받침을 생략한 표기"],k:0,e:"'받-'의 받침 'ㄷ'을 뒤로 넘기지 않고 그대로 두어 적었다.",lv:1},
+{w:11,area:"의미",q:"11번째 어절 '거시라'의 뜻으로 알맞은 것은?",o:["것이라, 것이어서", "거기라, 그곳이라", "걷어라, 거두어라", "컸어라, 자랐어라"],k:0,e:"의존 명사 '것'에 서술격 조사 '-이-'가 붙고 연결 어미 '-라'가 이어졌다.",lv:1},
+{w:11,area:"표기",q:"11번째 어절 '거시라'의 표기 방식으로 알맞은 것은?",o:["받침을 뒤로 넘긴 이어적기", "받침을 그대로 둔 끊어적기", "받침을 거듭 적은 표기", "받침을 적지 않은 표기"],k:0,e:"'것 + 이라'에서 받침 'ㅅ'을 뒤 음절로 넘겨 '거시라'로 적었다. 같은 문장 안에서도 이어적기와 끊어적기가 섞여 나타난다.",lv:1},
+{w:12,area:"의미",q:"12번째 어절 '敢감히'의 뜻으로 알맞은 것은?",o:["감히, 함부로", "갑자기, 문득", "가만히, 조용히", "간절히, 애타게"],k:0,e:"한자 '敢'에 한자음 '감'을 달고 접미사 '-히'가 붙어 부사가 되었다.",lv:1},
+{w:12,area:"문법",q:"12번째 어절 '敢감히'의 품사로 알맞은 것은?",o:["부사", "명사", "관형사", "감탄사"],k:0,e:"뒤에 오는 '헐워 샹ᄒᆡ오디'를 꾸미는 부사이다.",lv:1},
+{w:13,area:"의미",q:"13번째 어절 '헐워'의 뜻으로 알맞은 것은?",o:["헐게 하여, 상처 내어", "헐어서, 값을 깎아", "헤쳐서, 풀어서", "헐떡여, 숨차 하여"],k:0,e:"'헐다'에 사동 접미사 '-우-'가 붙어 '헐게 하다'가 되고, 연결 어미 '-어'가 이어졌다.",lv:1},
+{w:13,area:"문법",q:"13번째 어절 '헐워'에 쓰인 접사의 이름을 구체적으로 말하면?",o:["사동 접미사", "피동 접미사", "명사 파생 접미사", "부사 파생 접미사"],k:0,e:"'헐-'은 스스로 헐어지는 것을 뜻하는 자동사이고, 여기에 사동 접미사 '-우-'가 붙어 '헐게 하다'라는 뜻이 되었다.",lv:2},
+{w:14,area:"의미",q:"14번째 어절 '샹ᄒᆡ오디'의 뜻으로 알맞은 것은?",o:["상하게 하지", "생각하지", "상상하지", "성하게 하지"],k:0,e:"'샹(傷)'에 접미사가 붙어 '상하게 하다'가 되고, 부정을 이끄는 연결 어미 '-디'가 붙었다.",lv:1},
+{w:14,area:"문법",q:"14번째 어절 '샹ᄒᆡ오디'에 쓰인 접사의 이름을 구체적으로 말하면?",o:["사동 접미사", "피동 접미사", "높임 접미사", "명사 파생 접미사"],k:0,e:"'샹ᄒᆞ-'에 사동 접미사가 거듭 붙어 '상하게 하다'라는 뜻을 만들었다. 13번째 어절 '헐워'와 같은 갈래이다.",lv:2},
+{w:14,area:"변화",q:"14번째 어절 '샹ᄒᆡ오디'의 '디'를 현대 국어와 견주면 무엇을 알 수 있는가?",o:["구개음화가 아직 일어나지 않았다", "구개음화가 이미 일어났다", "두음 법칙이 이미 적용되었다", "원순모음화가 이미 끝났다"],k:0,e:"현대 국어라면 '-지'가 되지만 당시에는 '디'로 적었다. 'ㄷ'이 'ㅣ' 앞에서 'ㅈ'으로 바뀌는 구개음화는 뒷시기에 일어난다.",lv:2},
+{w:15,area:"의미",q:"15번째 어절 '아니'의 뜻으로 알맞은 것은?",o:["아니, 아니하여", "아니야, 그렇지 않아", "어찌, 어떻게", "아마, 아무래도"],k:0,e:"뒤의 '홈'과 어울려 '아니함'이라는 부정의 뜻을 이룬다.",lv:1},
+{w:15,area:"문법",q:"15번째 어절 '아니'의 품사로 알맞은 것은?",o:["부사", "감탄사", "명사", "조사"],k:0,e:"뒤에 오는 말을 꾸미며 부정의 뜻을 더하는 부사이다.",lv:1},
+{w:16,area:"의미",q:"'아니홈이 효도의 비르소미오'에서 16번째 어절 '홈이'의 뜻으로 알맞은 것은?",o:["함이, 하는 것이", "하며, 하면서", "하여, 해서", "하니, 하므로"],k:0,e:"'ᄒᆞ-'에 명사형 어미가 붙어 '함'이 되고, 주격 조사 '이'가 이어졌다.",lv:1},
+{w:16,area:"문법",q:"'아니홈이'의 '홈'에 쓰인 '-옴'은 어떤 말인가?",o:["용언을 명사처럼 쓰게 하는 전성 어미", "새 명사를 만들어 내는 파생 접미사", "까닭을 나타내어 주는 연결 어미", "뒷말을 꾸며 주는 관형사형 어미"],k:0,e:"'아니홈'은 '아니하는 것'이라는 뜻으로 서술하는 기능이 살아 있으므로, '-옴'은 명사형 전성 어미이다.",lv:2},
+{w:16,area:"변화",q:"16세기의 명사형 전성 어미에 대한 설명으로 알맞은 것은?",o:["'-옴/-움'이 '-ㅁ/-음'으로 바뀌어 가던 때이다", "15세기부터 줄곧 '-ㅁ/-음'만 쓰이던 때이다", "'-옴/-움'이 이 시기에 새로 생겨난 때이다", "명사형 전성 어미가 아예 쓰이지 않던 때이다"],k:0,e:"15세기에 '-옴/-움'으로 실현되던 명사형 전성 어미가 이 시기에 '-ㅁ/-음'으로 바뀌어 간다. 그래서 같은 문헌 안에 두 모습이 섞여 나타난다.",lv:2},
+{w:17,area:"의미",q:"'효도의 비르소미오'에서 17번째 어절 '효도의'의 뜻으로 알맞은 것은?",o:["효도가, 효도의", "효도에, 효도에서", "효도로, 효도로써", "효도와, 효도하고"],k:0,e:"형태는 관형격이지만 '효도가 비롯하는 것이고'처럼 의미상 주어 구실을 한다.",lv:1},
+{w:17,area:"문법",q:"'효도의 비르소미오'에서 17번째 어절 '효도의'에 쓰인 조사의 이름은?",o:["관형격 조사", "주격 조사", "목적격 조사", "부사격 조사"],k:0,e:"'-의'는 관형격 조사이다. 다만 명사절 속에서 의미상 주어처럼 쓰여 '효도가'로 옮긴다.",lv:2},
+{w:18,area:"의미",q:"18번째 어절 '비르소미오'의 뜻으로 알맞은 것은?",o:["비롯하는 것이고, 시작이고", "비웃는 것이고, 놀리는 것이고", "비추는 것이고, 밝히는 것이고", "비는 것이고, 바라는 것이고"],k:0,e:"'비릇다(비롯하다, 시작하다)'에 명사형 어미 '-옴'과 서술격 조사, 연결 어미 '-오'가 붙었다.",lv:1},
+{w:18,area:"표기",q:"18번째 어절 '비르소미오'의 표기 방식으로 알맞은 것은?",o:["받침을 뒤로 넘긴 이어적기", "받침을 그대로 둔 끊어적기", "받침을 거듭 적은 표기", "받침을 생략한 표기"],k:0,e:"'비릇- + -옴 + 이오'에서 받침을 뒤 음절로 넘겨 '비르소미오'로 적었다.",lv:1},
+{w:18,area:"문법",q:"18번째 어절 '비르소미오'의 '-오'는 어떤 구실을 하는가?",o:["앞뒤를 나란히 잇는 연결 어미", "문장을 끝맺는 종결 어미", "뒷말을 꾸미는 관형사형 어미", "주체를 높이는 선어말 어미"],k:0,e:"'-고'가 서술격 조사 뒤에서 '-오'로 바뀐 것으로, 앞뒤 내용을 나란히 잇는다.",lv:2},
+{w:19,area:"의미",q:"19번째 어절 '몸을'의 뜻으로 알맞은 것은?",o:["몸을", "모음을", "못을", "몫을"],k:0,e:"'몸'에 목적격 조사 '-을'이 붙었다. 뒤의 '셰워'와 어울려 입신(立身)을 뜻한다.",lv:1},
+{w:19,area:"음운",q:"19번째 어절 '몸을'이 보여 주는 16세기의 변화로 알맞은 것은?",o:["모음 조화가 점차 지켜지지 않게 되었다", "모음 조화가 전보다 한층 엄격해졌다", "구개음화가 이미 끝나고 자리를 잡았다", "원순모음화가 일어나 널리 퍼져 있었다"],k:0,e:"'몸'의 'ㅗ'는 양성 모음이므로 모음 조화를 지켰다면 '-ᄋᆞᆯ'이 와야 한다. 음성 모음의 '-을'이 쓰인 것은 모음 조화가 흔들리고 있음을 보여 준다.",lv:2},
+{w:19,area:"표기",q:"19번째 어절 '몸을'의 표기 방식으로 알맞은 것은?",o:["받침을 그대로 둔 끊어적기", "받침을 뒤로 넘긴 이어적기", "받침을 거듭 적은 표기", "받침을 적지 않은 표기"],k:0,e:"'몸 + 을'에서 받침 'ㅁ'을 넘겨 '모믈'로 적지 않고 '몸을'로 적었다.",lv:1},
+{w:20,area:"의미",q:"20번째 어절 '셰워'의 뜻으로 알맞은 것은?",o:["세워, 서게 하여", "세어, 헤아려", "새워, 밤을 지새워", "쇠어, 약해져"],k:0,e:"'셔다(서다)'에 사동 접미사가 붙어 '세우다'가 되고, 연결 어미 '-어'가 이어졌다. '몸을 셰워'는 입신(立身)을 옮긴 말이다.",lv:1},
+{w:20,area:"문법",q:"20번째 어절 '셰워'에 쓰인 접사의 이름을 구체적으로 말하면?",o:["사동 접미사", "피동 접미사", "명사 파생 접미사", "관형사 파생 접미사"],k:0,e:"'셔-(서다)'에 사동 접미사가 붙어 '서게 하다'의 뜻이 되었다. 13·14번째 어절과 같은 갈래이다.",lv:2},
+{w:21,area:"의미",q:"21번째 어절 '道도를'의 뜻으로 알맞은 것은?",o:["도를, 도리를", "길을, 거리를", "도읍을, 서울을", "돌을, 바위를"],k:0,e:"한자 '道'에 한자음 '도'를 달고 목적격 조사 '-를'이 붙었다. 사람이 마땅히 지켜야 할 도리를 뜻한다.",lv:1},
+{w:21,area:"표기",q:"21번째 어절 '道도를'처럼 한자 옆에 한글을 단 표기에 대한 설명으로 알맞은 것은?",o:["한자의 실제 소리를 한글로 밝혀 적은 것", "한자의 뜻을 한글로 풀어 적은 것", "한자를 소리대로 읽지 말라는 표시", "한자를 잘못 쓴 것을 바로잡은 표시"],k:0,e:"한자 뒤에 당시의 현실 한자음을 한글로 달아 두었다. 소학언해는 동국정운식 한자음을 쓰지 않는다.",lv:2},
+{w:22,area:"의미",q:"22번째 어절 '行ᄒᆡᆼᄒᆞ야'의 뜻으로 알맞은 것은?",o:["행하여, 실천하여", "다녀서, 걸어서", "향하여, 그쪽으로", "행복하여, 즐거워"],k:0,e:"한자어 '行'에 '-ᄒᆞ다'가 붙은 말에 연결 어미가 이어졌다. '道를 行ᄒᆞ야'는 도리를 실천한다는 뜻이다.",lv:1},
+{w:22,area:"글자",q:"22번째 어절 '行ᄒᆡᆼᄒᆞ야'의 한자음 받침에 쓰인 'ㆁ'에 대한 설명으로 알맞은 것은?",o:["오늘날 받침 'ㅇ'의 소리를 적던 옛이응이다", "소리 없이 자리만 채워 주던 글자이다", "'ㅎ'보다 약한 소리를 적어 주던 글자이다", "된소리로 읽으라는 표시로 쓰던 부호이다"],k:0,e:"'ㆁ'(옛이응)은 오늘날의 받침 'ㅇ' 소리를 적던 글자로, 꼭지가 달려 있다. 16세기에도 받침 자리에서는 쓰였다.",lv:2},
+{w:23,area:"의미",q:"23번째 어절 '일홈을'의 뜻으로 알맞은 것은?",o:["이름을", "일함을, 일하는 것을", "잃음을, 잃는 것을", "읽음을, 읽는 것을"],k:0,e:"'일홈'은 '이름'의 옛말이다. 목적격 조사 '-을'이 붙었다.",lv:1},
+{w:23,area:"음운",q:"23번째 어절 '일홈을'이 보여 주는 16세기의 변화로 알맞은 것은?",o:["모음 조화가 점차 지켜지지 않게 되었다", "모음 조화가 전보다 한층 엄격해졌다", "두음 법칙이 적용되기 시작하고 있었다", "구개음화가 일어나기 시작하고 있었다"],k:0,e:"'일홈'의 'ㅗ'는 양성 모음이므로 '-ᄋᆞᆯ'이 와야 모음 조화에 맞는다. 음성 모음의 '-을'이 쓰인 것은 모음 조화가 흔들리고 있음을 보여 준다.",lv:2},
+{w:23,area:"표기",q:"23번째 어절 '일홈을'의 표기 방식으로 알맞은 것은?",o:["받침을 그대로 둔 끊어적기", "받침을 뒤로 넘긴 이어적기", "받침을 거듭 적은 표기", "받침을 생략한 표기"],k:0,e:"'일홈 + 을'에서 받침 'ㅁ'을 넘겨 '일호믈'로 적지 않고 '일홈을'로 적었다.",lv:1},
+{w:24,area:"의미",q:"24번째 어절 '後후世셰예'의 뜻으로 알맞은 것은?",o:["후세에, 뒷세상에", "후세의, 뒷세상의", "후세와, 뒷세상과", "후세보다, 뒷세상보다"],k:0,e:"한자어 '後世'에 부사격 조사 '-예'가 붙어 '뒷세상에'라는 뜻이 된다.",lv:1},
+{w:24,area:"문법",q:"24번째 어절 '後후世셰예'에 '-애/-에'가 아니라 '-예'가 쓰인 까닭은?",o:["앞말이 'ㅣ' 소리로 끝났기 때문에", "앞말이 한자에서 온 말이기 때문에", "앞말이 때를 나타내기 때문에", "앞말이 받침으로 끝났기 때문에"],k:0,e:"부사격 조사는 양성 모음 뒤에서 '-애', 음성 모음 뒤에서 '-에', 'ㅣ' 소리로 끝나는 말 뒤에서 '-예'로 나타난다. '셰'가 'ㅣ' 소리로 끝났다.",lv:2},
+{w:25,area:"의미",q:"25번째 어절 '베퍼 ᄡᅥ'의 뜻으로 알맞은 것은?",o:["베풀어 그로써", "베어서 썰어", "빼앗아 써서", "배워서 익혀"],k:0,e:"'베프다(베풀다, 떨치다)'에 연결 어미가 붙은 '베퍼'와, 한자 '以'를 옮긴 부사 'ᄡᅥ'가 이어졌다.",lv:1},
+{w:25,area:"음운",q:"25번째 어절 '베퍼'에서 확인할 수 있는 음운 현상은?",o:["'ㅡ'가 모음 어미 앞에서 탈락하였다", "'ㅂ'이 반모음으로 바뀌어 나타났다", "구개음화가 일어나 소리가 바뀌었다", "된소리되기가 일어나 소리가 바뀌었다"],k:0,e:"'베프- + -어'에서 어간 끝의 'ㅡ'가 떨어져 '베퍼'가 되었다. 현대 국어의 '쓰다→써'와 같은 규칙 활용이다.",lv:2},
+{w:25,area:"의미",q:"25번째 어절의 'ᄡᅥ'에 대한 설명으로 알맞은 것은?",o:["한자 '以'를 그대로 옮긴 부사이다", "'쓰다'의 명령형이 굳어진 말이다", "'서다'의 활용형이 굳어진 말이다", "앞말을 꾸미는 구실을 하는 관형사이다"],k:0,e:"'ᄡᅳ-(쓰다)'에 '-어'가 붙어 굳어진 부사로, 한문의 '以'를 직역한 말이다.",lv:2},
+{w:26,area:"의미",q:"26번째 어절 '父부母모ᄅᆞᆯ'의 뜻으로 알맞은 것은?",o:["부모를", "부모께", "부모와", "부모의"],k:0,e:"'父母'에 목적격 조사 '-ᄅᆞᆯ'이 붙었다. 9번째 어절의 '父母ᄭᅴ'와는 조사가 다르다.",lv:1},
+{w:26,area:"문법",q:"26번째 어절 '父부母모ᄅᆞᆯ'과 9번째 어절 '父부母모ᄭᅴ'의 차이로 알맞은 것은?",o:["하나는 목적어, 하나는 높임의 상대를 나타낸다", "하나는 주어를, 하나는 목적어를 나타낸다", "하나는 관형어를, 하나는 부사어를 나타낸다", "둘은 쓰임이 같고 표기만 서로 다르다"],k:0,e:"'-ᄅᆞᆯ'은 목적격 조사이고, '-ᄭᅴ'는 높임의 대상에게 쓰는 부사격 조사이다.",lv:2},
+{w:27,area:"의미",q:"27번째 어절 '현뎌케'의 뜻으로 알맞은 것은?",o:["드러나게, 뚜렷하게", "현명하게, 슬기롭게", "험하게, 사납게", "한가하게, 느긋하게"],k:0,e:"'현뎌(顯著)ᄒᆞ다'에 연결 어미 '-게'가 붙어 '드러나게'라는 뜻이 되었다.",lv:1},
+{w:27,area:"변화",q:"27번째 어절 '현뎌케'의 '뎌'를 현대 국어와 견주면 무엇을 알 수 있는가?",o:["구개음화가 아직 일어나지 않았다", "구개음화가 이미 일어났다", "두음 법칙이 이미 적용되었다", "원순모음화가 이미 일어났다"],k:0,e:"현대 국어라면 '저'가 되지만 당시에는 '뎌'로 적었다. 'ㄷ'이 'ㅣ' 계열 모음 앞에서 'ㅈ'으로 바뀌는 구개음화는 뒷시기에 일어난다.",lv:2},
+{w:27,area:"음운",q:"27번째 어절 '현뎌케'에서 '현뎌ᄒᆞ- + -게'가 '현뎌케'가 된 것은 어떤 현상인가?",o:["거센소리되기", "된소리되기", "구개음화", "모음 탈락"],k:0,e:"'ᄒᆞ-'의 'ㅎ'과 어미의 'ㄱ'이 합쳐져 'ㅋ'이 되었다. 소리 나는 대로 적은 표기이다.",lv:2},
+{w:28,area:"의미",q:"'현뎌케 홈이 효도의 ᄆᆞᆺᄎᆞᆷ이니라'에서 28번째 어절 '홈이'의 뜻으로 알맞은 것은?",o:["함이, 하는 것이", "하며, 하면서", "하여, 해서", "하니, 하므로"],k:0,e:"'ᄒᆞ-'에 명사형 어미가 붙어 '함'이 되고 주격 조사 '이'가 이어졌다. 앞의 '현뎌케'를 받는다.",lv:1},
+{w:28,area:"문법",q:"'현뎌케 홈이'의 '홈'과 30번째 어절 'ᄆᆞᆺᄎᆞᆷ'의 차이로 알맞은 것은?",o:["'홈'은 어미가, 'ᄆᆞᆺᄎᆞᆷ'은 접미사가 붙었다", "'홈'은 접미사가, 'ᄆᆞᆺᄎᆞᆷ'은 어미가 붙었다", "둘 다 어미가 붙어서 만들어진 말이다", "둘 다 접미사가 붙어서 만들어진 말이다"],k:0,e:"'홈'은 서술하는 기능이 살아 있으므로 명사형 전성 어미가 붙은 것이고, 'ᄆᆞᆺᄎᆞᆷ'은 '마침'이라는 하나의 명사이므로 파생 접미사가 붙은 것이다.",lv:2},
+{w:29,area:"의미",q:"'효도의 ᄆᆞᆺᄎᆞᆷ이니라'에서 29번째 어절 '효도의'의 뜻으로 알맞은 것은?",o:["효도의", "효도에", "효도로", "효도와"],k:0,e:"관형격 조사 '-의'가 붙어 뒤의 'ᄆᆞᆺᄎᆞᆷ'을 꾸민다. '효도의 마침'이라는 뜻이다.",lv:1},
+{w:29,area:"문법",q:"중세 국어의 관형격 조사에 대한 설명으로 알맞은 것은?",o:["앞말의 모음에 따라 'ᄋᆡ'와 '의'로 나뉘었다", "언제나 '의' 한 가지 형태로만 쓰였다", "사람을 가리키는 말 뒤에는 쓸 수 없었다", "현대 국어보다 종류가 적어 하나뿐이었다"],k:0,e:"높이지 않는 유정 명사 뒤에서는 모음 조화에 따라 양성 뒤에 'ᄋᆡ', 음성 뒤에 '의'가 쓰였고, 높임의 대상이나 무정 명사 뒤에는 'ㅅ'이 쓰였다.",lv:2},
+{w:30,area:"의미",q:"30번째 어절 'ᄆᆞᆺᄎᆞᆷ이니라'의 뜻으로 알맞은 것은?",o:["마침이니라, 끝이니라", "맞음이니라, 옳음이니라", "맡음이니라, 떠맡음이니라", "마음이니라, 생각이니라"],k:0,e:"'및다(마치다)'에 명사 파생 접미사가 붙어 '마침'이 되고, 서술격 조사와 '-니라'가 이어졌다.",lv:1},
+{w:30,area:"문법",q:"30번째 어절 'ᄆᆞᆺᄎᆞᆷ이니라'의 'ᄆᆞᆺᄎᆞᆷ'에 쓰인 'ᄋᆞᆷ'은 어떤 말인가?",o:["새 명사를 만드는 파생 접미사", "용언을 명사처럼 쓰게 하는 전성 어미", "앞뒤를 잇는 연결 어미", "뒷말을 꾸미는 관형사형 어미"],k:0,e:"'ᄆᆞᆺᄎᆞᆷ'은 '마침'이라는 하나의 명사이고 서술하는 기능이 없으므로, 붙은 것은 명사 파생 접미사이다.",lv:2},
+{w:30,area:"문법",q:"30번째 어절 'ᄆᆞᆺᄎᆞᆷ이니라'의 '-니-'는 어떤 뜻을 더하는가?",o:["마땅히 그러하다는 원칙의 뜻", "앞으로 그러하리라는 추측의 뜻", "이미 그러했다는 과거의 뜻", "듣는 이를 높이는 뜻"],k:0,e:"'-니라'는 원칙이나 당위를 나타내며 문장을 끝맺는 표현이다.",lv:2}
+];
+
+
+const BOOK = "고전문법";
+const AREAS = [
+  {k:"의미", n:"현대어 풀이", d:"어절의 뜻과 현대어 옮김"},
+  {k:"표기", n:"표기 방식",   d:"이어적기·끊어적기·한자음 표기"},
+  {k:"음운", n:"음운 현상",   d:"ㅎ종성체언·모음조화·7종성 등"},
+  {k:"글자", n:"사라진 글자", d:"ㅿ · ㆁ · ㆍ · 방점"},
+  {k:"문법", n:"조사·어미",   d:"조사·어미·높임법·사동"},
+  {k:"변화", n:"의미 변화",   d:"15세기→16세기 변화·의미 변화"}
+];
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_TRO8DzQ_logLVEw5Q9nyvriACAJ91eHkQ2NOMMvMIldvwV5_17WxTzbxbX6_dbh5/exec";
+const IMG = w => "images/w" + String(w).padStart(2,"0") + ".png";
+
+/* 오답일 때 띄우는 그림 (wrong.png 가 없으면 아래 그림) */
+const FALLBACK_SVG = `<svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" fill="none"
+  stroke="#111" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="176" cy="150" r="76"/><circle cx="150" cy="140" r="9" fill="#111"/><circle cx="204" cy="140" r="9" fill="#111"/>
+<path d="M150 190q26 16 52 0"/><path d="M120 92q22-14 40 2"/><path d="M196 90q20-12 34 6"/>
+<path d="M60 230h70v52"/><path d="M52 282h230"/></svg>`;
+
+/* ── 링크로 전달된 설정 ──
+   ?fix=1  설정 잠금 / &a=0,2 영역 / &lv=0|1|2 / &n=20 / &t=시험 이름 */
+const P = new URLSearchParams(location.search);
+const FIXED = P.get("fix") === "1";
+const EXAM = (P.get("t") || "").trim();
+const SEEN_KEY = "sh_seen_v1", NAME_KEY = "sh_name", NICK_KEY = "sh_nick";
+
+let sel = AREAS.map(a=>a.k);
+let qCount = 20, lvSel = 0;
+let current = [], orders = [], answers = [], idx = 0;
+let waitingNext = false, phase = "q", mode = "main", reviewRound = 0, sent = false, nick = "";
+
+const $ = s => document.querySelector(s);
+const shuffle = a => { for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function getSeen(){ try{ return JSON.parse(localStorage.getItem(SEEN_KEY))||[] }catch(e){ return [] } }
+function setSeen(v){ try{ localStorage.setItem(SEEN_KEY, JSON.stringify(v)) }catch(e){} }
+
+POOL.forEach((it,i)=>it.id = i + "|" + it.w);
+
+/* ===== 시작 화면 ===== */
+function drawAreas(){
+  $("#areas").innerHTML = AREAS.map(a=>`
+    <div class="opt ${sel.includes(a.k)?'on':''}" data-k="${a.k}">
+      <div class="box"></div><div><b>${a.n}</b><small>${a.d}</small></div>
+    </div>`).join("");
+  $("#areas").querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+    const k = el.dataset.k;
+    sel.includes(k) ? sel = sel.filter(x=>x!==k) : sel.push(k);
+    drawAreas(); updateCnt();
+  });
+}
+function drawLevels(){
+  $("#levels").innerHTML = [[0,"전체"],[1,"기본만"],[2,"심화만"]].map(([v,n])=>
+    `<button class="chip ${v===lvSel?'on':''}" data-v="${v}">${n}</button>`).join("");
+  $("#levels").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ lvSel = +el.dataset.v; drawLevels(); updateCnt(); });
+}
+function drawCounts(){
+  $("#counts").innerHTML = [10,15,20,25,30].map(n=>
+    `<button class="chip ${n===qCount?'on':''}" data-n="${n}">${n}문항</button>`).join("");
+  $("#counts").querySelectorAll(".chip").forEach(el=>el.onclick=()=>{ qCount = +el.dataset.n; drawCounts(); });
+}
+function candidates(){ return POOL.filter(i=>sel.includes(i.area) && (lvSel===0 || i.lv===lvSel)); }
+function updateCnt(){
+  const n = candidates().length;
+  $("#poolCnt").textContent = n;
+  $("#startBtn").disabled = n < 5;
+}
+
+function applyParams(){
+  const a = P.get("a");
+  if(a){
+    const ids = a.split(",").map(Number).filter(i=>AREAS[i]);
+    if(ids.length) sel = ids.map(i=>AREAS[i].k);
+  }
+  if(P.get("lv")!==null) lvSel = Math.max(0, Math.min(2, parseInt(P.get("lv"))||0));
+  if(P.get("n"))         qCount = Math.max(5, Math.min(50, parseInt(P.get("n"))||20));
+  document.title = (EXAM ? EXAM + " · " : "") + "소학언해 복습시험";
+  if(!FIXED) return;
+  ["areaPanel","lvPanel","cntPanel"].forEach(id=>{ const el=$("#"+id); if(el) el.style.display="none"; });
+  $("#fixedBox").style.display = "block";
+  if(EXAM) $("#fixedTitle").textContent = EXAM;
+  $("#fixedInfo").innerHTML =
+    `출제 범위 <b style="color:var(--text-primary)">${sel.map(k=>AREAS.find(x=>x.k===k).n).join(" · ")}</b><br>` +
+    `난도 <b style="color:var(--text-primary)">${["전체","기본","심화"][lvSel]}</b> · ` +
+    `<b style="color:var(--gold)">${qCount}</b>문항<br>` +
+    `<span style="color:var(--text-dim)">아래에 닉네임과 이름을 입력하고 시작하세요.</span>`;
+}
+
+/* ===== 출제 ===== */
+function pick(){
+  const cand = candidates(), seen = getSeen();
+  const fresh = shuffle(cand.filter(i=>!seen.includes(i.id)));
+  const old   = shuffle(cand.filter(i=> seen.includes(i.id)));
+  const order = fresh.concat(old);
+  const want = Math.min(qCount, cand.length);
+  const out = [], usedW = {};
+  const cap = Math.max(1, Math.ceil(want/6));        // 같은 어절이 몰리지 않게
+  for(const it of order){
+    if(out.length>=want) break;
+    if((usedW[it.w]||0) >= cap) continue;
+    out.push(it); usedW[it.w] = (usedW[it.w]||0)+1;
+  }
+  for(const it of order){                            // 모자라면 채우기
+    if(out.length>=want) break;
+    if(!out.includes(it)) out.push(it);
+  }
+  const keep = Math.floor(cand.length*0.6);
+  let ns = getSeen().concat(out.map(i=>i.id));
+  if(ns.length > keep) ns = ns.slice(ns.length - keep);
+  setSeen(ns);
+  return shuffle(out);
+}
+
+/* ===== 시험 진행 ===== */
+function start(){
+  const nm = $("#name").value.trim(), nk = $("#nick").value.trim();
+  if(!nk){ toast("닉네임을 입력해 주세요."); $("#nick").focus(); return; }
+  if(!nm){ toast("이름(실명)도 입력해 주세요."); $("#name").focus(); return; }
+  nick = nk;
+  try{ localStorage.setItem(NAME_KEY, nm); localStorage.setItem(NICK_KEY, nk); }catch(e){}
+
+  current = pick();
+  orders  = current.map(it => shuffle(it.o.map((t,i)=>({t, ok:i===it.k}))));
+  answers = current.map(()=>null);
+  idx = 0; waitingNext = false; phase = "q"; sent = false; mode = "main"; reviewRound = 0;
+
+  $("#setup").style.display="none"; $("#result").style.display="none";
+  $("#review").style.display="none"; $("#quiz").style.display="block";
+  $("#hName").textContent = nk;
+  $("#hsub").textContent = (EXAM ? EXAM + " · " : "") + (lvSel===1?"기본 · ":lvSel===2?"심화 · ":"") +
+    sel.map(k=>AREAS.find(a=>a.k===k).n).join(" · ");
+  drawQ(); window.scrollTo(0,0);
+}
+
+function drawQ(){
+  const it = current[idx];
+  $("#stage").innerHTML = `
+    <div class="stage">
+      <div class="qhead">
+        <div class="num">${idx+1} / ${current.length}</div>
+        ${mode==="review" ? '<span class="tag rv">오답 복습'+(reviewRound>1?' '+reviewRound+'회차':'')+'</span>' : ""}
+        <span class="tag ${it.lv===2?'lv2':'lv1'}">${it.lv===2?'심화':'기본'}</span>
+        <span class="tag">${esc(AREAS.find(a=>a.k===it.area).n)}</span>
+      </div>
+      <div class="wordbox"><img src="${IMG(it.w)}" alt="소학언해 ${it.w}번째 어절"></div>
+      <p class="qtext">${esc(it.q)}</p>
+      <div class="choices4">
+        ${orders[idx].map((o,i)=>`<button class="ch4" data-i="${i}"><span class="kbd">${i+1}</span>${esc(o.t)}</button>`).join("")}
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>`;
+  $("#stage").querySelectorAll(".ch4").forEach(b=>b.onclick=()=>choose(+b.dataset.i));
+  phase = "q"; progress();
+}
+
+function choose(i){
+  if(answers[idx] !== null) return;
+  answers[idx] = i;
+  const ok = orders[idx][i].ok;
+  $("#stage").querySelectorAll(".ch4").forEach((b,j)=>{
+    b.disabled = true;
+    if(ok){ if(j===i) b.classList.add("ok"); }
+    else if(j===i) b.classList.add("no");       // 오답이면 정답은 아직 숨김
+  });
+  progress();
+  ok ? revealExp() : showWrongShot();
+}
+
+/* 오답: 그림 먼저 → 한 번 더 누르면 정답·해설 */
+function showWrongShot(){
+  const vd = $("#verdict");
+  vd.innerHTML = `
+    <div class="wrongshot">
+      <div class="imgbox"><img src="wrong.png" alt="틀렸어요"
+        onerror="this.onerror=null;this.outerHTML=FALLBACK_SVG"></div>
+      <div class="wtitle">앗, 틀렸어요</div>
+      <div class="wsub">정답과 해설을 확인해 볼까요?</div>
+      <button class="nextbtn" id="nextBtn">정답 확인하기 →</button>
+      <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 됩니다</div>
+    </div>`;
+  vd.classList.add("show");
+  $("#nextBtn").onclick = e=>{ e.stopPropagation(); advance(); };
+  phase = "img";
+  vd.scrollIntoView({behavior:"smooth", block:"nearest"});
+  setTimeout(()=>{ waitingNext = true; }, 60);
+}
+
+function revealExp(){
+  const it = current[idx], ok = orders[idx][answers[idx]].ok;
+  const last = idx === current.length-1;
+  const ansText = it.o[it.k];
+  $("#stage").querySelectorAll(".ch4").forEach((b,j)=>{ if(orders[idx][j].ok) b.classList.add("ok"); });
+  const vd = $("#verdict");
+  vd.innerHTML = `
+    <div class="vtitle ${ok?'o':'x'}">${ok?'⭕ 정답입니다':'❌ 오답입니다'} · 정답은 ‘${esc(ansText)}’</div>
+    <div class="exp">${esc(it.e)}
+      <span class="src">소학언해 ${it.w}번째 어절 · ${esc(AREAS.find(a=>a.k===it.area).n)}</span></div>
+    <button class="nextbtn" id="nextBtn">${last?(mode==="review"?'복습 결과 보기 →':'결과 보기 →'):'다음 문제 →'}</button>
+    <div class="nexthint">아무 곳이나 한 번 더 누르거나 Enter/Space 를 눌러도 넘어갑니다</div>`;
+  vd.classList.add("show");
+  $("#nextBtn").onclick = e=>{ e.stopPropagation(); advance(); };
+  phase = "exp";
+  vd.scrollIntoView({behavior:"smooth", block:"nearest"});
+  setTimeout(()=>{ waitingNext = true; }, 60);
+}
+
+function advance(){
+  if(!waitingNext) return;
+  waitingNext = false;
+  if(phase === "img"){ revealExp(); return; }
+  next();
+}
+function next(){
+  if(idx < current.length-1){ idx++; drawQ(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else if(mode === "review") showReviewResult();
+  else showResult(grade());
+}
+function progress(){
+  const done = answers.filter(a=>a!==null).length;
+  const p = current.length ? done/current.length : 0;
+  $("#ringC").style.strokeDashoffset = 119.4*(1-p);
+  $("#ringT").textContent = Math.round(p*100)+"%";
+  $("#pfill").style.width = (p*100)+"%";
+}
+document.addEventListener("click", ()=>{ if(waitingNext) advance(); });
+document.addEventListener("keydown", e=>{
+  if($("#quiz").style.display === "none") return;
+  if(waitingNext && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); advance(); return; }
+  if(answers[idx]===null && ["1","2","3","4"].includes(e.key)){
+    const b = $("#stage").querySelectorAll(".ch4")[+e.key-1];
+    if(b) choose(+b.dataset.i);
+  }
+});
+
+/* ===== 채점 & 결과 ===== */
+function grade(){
+  const rows = current.map((it,i)=>({it, my:answers[i], ok:answers[i]!==null && orders[i][answers[i]].ok}));
+  const total = rows.length, correct = rows.filter(r=>r.ok).length;
+  const byArea = {};
+  rows.forEach(r=>{
+    byArea[r.it.area] = byArea[r.it.area] || {t:0,c:0};
+    byArea[r.it.area].t++; if(r.ok) byArea[r.it.area].c++;
+  });
+  return {rows, total, correct, rate: total?Math.round(correct/total*100):0, byArea};
+}
+let lastGrade = null;
+function wrongCard(it, myText){
+  return `<div class="wrongitem">
+    <div class="wimg"><img src="${IMG(it.w)}" alt=""></div>
+    <div>${esc(it.q)}</div>
+    <div class="line">${myText ? '내 답: <s>'+esc(myText)+'</s> → ' : ''}정답: <b>${esc(it.o[it.k])}</b> · ${esc(AREAS.find(a=>a.k===it.area).n)}</div>
+    <div class="line">${esc(it.e)}</div>
+  </div>`;
+}
+function showResult(g){
+  lastGrade = g;
+  $("#quiz").style.display="none"; $("#result").style.display="block";
+  $("#rScore").textContent = g.rate + "점";
+  $("#rSub").textContent = `${nick} · ${g.total}문항 중 ${g.correct}문항 정답`;
+  $("#rBars").innerHTML = Object.entries(g.byArea).map(([k,v])=>{
+    const p = Math.round(v.c/v.t*100), nm = (AREAS.find(a=>a.k===k)||{n:k}).n;
+    return `<div class="bar"><span>${esc(nm)}</span><div class="track"><div class="fill" style="width:${p}%"></div></div><span>${v.c}/${v.t}</span></div>`;
+  }).join("");
+  const wrongs = g.rows.filter(r=>!r.ok);
+  if(wrongs.length){
+    $("#rWrongBox").style.display="block";
+    $("#reviewBtn").textContent = `✏️ 틀린 ${wrongs.length}문제만 다시 풀기`;
+    $("#rWrong").innerHTML = wrongs.map(r=>{
+      const i = current.indexOf(r.it);
+      const myText = r.my===null ? "" : orders[i][r.my].t;
+      return wrongCard(r.it, myText);
+    }).join("");
+  } else $("#rWrongBox").style.display="none";
+  $("#submitBtn").disabled = false; $("#submitBtn").textContent = "결과 제출";
+  window.scrollTo(0,0);
+  loadRank();
+  if(g.rate===100) celebrate();
+}
+
+/* ===== 순위 ===== */
+async function loadRank(){
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf("http") !== 0){ $("#rankBox").style.display="none"; return; }
+  const scope = EXAM ? `‘${esc(EXAM)}’ 응시자` : "고전문법 자유 복습";
+  $("#rankNote").textContent = EXAM
+    ? "닉네임만 표시됩니다 · 같은 시험 링크로 푼 학생끼리, 한 사람당 최고 기록으로 비교합니다"
+    : "닉네임만 표시됩니다 · 자유 복습끼리 정답률로 비교합니다(한 사람당 최고 기록)";
+  $("#rankList").innerHTML = '<li class="msg">불러오는 중…</li>';
+  const q = new URLSearchParams({ mode:"rank", book:BOOK, exam:EXAM, me:$("#name").value.trim(), nick:nick, t:Date.now() });
+  try{
+    const j = await (await fetch(SCRIPT_URL + "?" + q.toString())).json();
+    if(j.me) $("#rankMe").innerHTML = `${scope} <b>${j.count}</b>명 중 <b>${j.me.rank}등</b> · 내 최고 기록 <b>${j.me.rate}점</b>`;
+    else if(sent) $("#rankMe").innerHTML = `${scope} <b>${j.count}</b>명 · 방금 제출한 기록을 반영하는 중이에요. 잠시 뒤 ↻를 눌러 보세요.`;
+    else $("#rankMe").innerHTML = `결과를 제출하면 순위에 올라가요 · 지금까지 ${scope} <b>${j.count}</b>명`;
+    const medal = r => r<=3 ? ["🥇","🥈","🥉"][r-1] : r;
+    $("#rankList").innerHTML = (j.top||[]).length
+      ? j.top.map(s=>`<li class="${j.me && s.rank===j.me.rank && s.nick===j.me.nick ? 'me' : ''}">
+          <span class="rk">${medal(s.rank)}</span><span>${esc(s.nick)}</span><span class="rt">${s.rate}점</span></li>`).join("")
+      : '<li class="msg">아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!</li>';
+  }catch(e){
+    $("#rankList").innerHTML = '<li class="msg">순위를 불러오지 못했어요. ↻를 눌러 다시 시도해 주세요.</li>';
+  }
+}
+
+/* ===== 오답 복습 ===== */
+let reviewLeft = [];
+function startReview(items){
+  if(!items.length) return;
+  mode = "review"; reviewRound++;
+  current = shuffle(items.slice());
+  orders  = current.map(it => shuffle(it.o.map((t,i)=>({t, ok:i===it.k}))));
+  answers = current.map(()=>null);
+  idx = 0; waitingNext = false; phase = "q";
+  $("#result").style.display="none"; $("#review").style.display="none"; $("#quiz").style.display="block";
+  $("#hsub").textContent = "✏️ 오답 복습" + (reviewRound>1 ? " " + reviewRound + "회차" : "") + " · " + current.length + "문항";
+  drawQ(); window.scrollTo(0,0);
+}
+function showReviewResult(){
+  const total = current.length;
+  reviewLeft = current.filter((it,i)=> !(answers[i]!==null && orders[i][answers[i]].ok));
+  const fixed = total - reviewLeft.length;
+  $("#quiz").style.display="none"; $("#review").style.display="block";
+  $("#rvBig").textContent = reviewLeft.length ? `${fixed} / ${total}` : "🎉 오답 정복!";
+  $("#rvSub").textContent = reviewLeft.length
+    ? `${nick} · 틀렸던 ${total}문항 중 ${fixed}문항을 바로잡았어요`
+    : `${nick} · 틀렸던 문제를 모두 바로잡았어요. 이제 시험 결과를 제출하세요!`;
+  const firstWrong = lastGrade ? lastGrade.rows.filter(r=>!r.ok).length : total;
+  $("#rvStat").innerHTML =
+    `<span>처음 틀린 문항 <b>${firstWrong}</b></span><span>복습 <b>${reviewRound}</b>회차</span><span>남은 문항 <b>${reviewLeft.length}</b></span>`;
+  if(reviewLeft.length){
+    $("#rvLeftBox").style.display="block";
+    $("#rvAgainBtn").textContent = `✏️ 남은 ${reviewLeft.length}문제 다시 풀기`;
+    $("#rvLeft").innerHTML = reviewLeft.map(it=>wrongCard(it, "")).join("");
+  } else { $("#rvLeftBox").style.display="none"; celebrateReview(); }
+  $("#rvBackBtn").textContent = sent ? "← 시험 결과로 돌아가기" : "← 시험 결과로 돌아가 제출하기";
+  window.scrollTo(0,0);
+}
+function celebrateReview(){ $("#celeMsg").textContent = nick + " 님, 틀린 문제를 모두 정복했어요! 이제 진짜 내 것이 됐다."; celebrate(true); }
+function celebrate(keepMsg){
+  if(!keepMsg) $("#celeMsg").textContent = nick + " 님, 이대로면 시험도 100점이지. 조금 더 파이팅!";
+  $("#cele").classList.add("on");
+  const colors=["#c9a84c","#6b8f5e","#8aad7a","#4ade80","#a08838"];
+  for(let i=0;i<70;i++){
+    const d=document.createElement("div"); d.className="confetti";
+    d.style.left=Math.random()*100+"vw"; d.style.background=colors[i%colors.length];
+    d.style.animationDuration=(2+Math.random()*2)+"s"; d.style.animationDelay=(Math.random()*.8)+"s";
+    document.body.appendChild(d); setTimeout(()=>d.remove(),5200);
+  }
+}
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2600); }
+
+/* ===== 제출 ===== */
+function submit(){
+  if(!lastGrade || sent) return;
+  const name = $("#name").value.trim() || "이름없음";
+  const g = lastGrade;
+  if(SCRIPT_URL && SCRIPT_URL.indexOf("http") === 0){
+    const label = it => it.w + "번 " + (AREAS.find(a=>a.k===it.area)||{n:it.area}).n;
+    const payload = {
+      studentName: name, nickname: nick,
+      title: "소학언해 복습시험",
+      areas: "["+BOOK+"] " + (EXAM ? "["+EXAM+"] " : "") + sel.map(k=>AREAS.find(a=>a.k===k).n).join("/"),
+      totalBlanks: g.total, totalCorrect: g.correct, totalRate: g.rate,
+      sections: Object.entries(g.byArea).map(([k,v])=>({
+        work: (AREAS.find(a=>a.k===k)||{n:k}).n,
+        total: v.t, correct: v.c, rate: Math.round(v.c/v.t*100),
+        wrongs:   g.rows.filter(r=>!r.ok && r.it.area===k).map(r=>label(r.it)),
+        corrects: g.rows.filter(r=> r.ok && r.it.area===k).map(r=>label(r.it))
+      }))
+    };
+    $("#sendForm").action = SCRIPT_URL;
+    $("#sendData").value = JSON.stringify(payload);
+    $("#sendForm").submit();
+    sent = true;
+    $("#submitBtn").disabled = true; $("#submitBtn").textContent = "제출 완료 ✓";
+    toast("✅ 결과가 제출되었습니다!");
+    setTimeout(loadRank, 3500);
+  } else toast("전송 주소가 설정되지 않았습니다.");
+}
+
+/* ===== 이벤트 ===== */
+$("#allBtn").onclick = ()=>{ sel = sel.length===AREAS.length ? [] : AREAS.map(a=>a.k); drawAreas(); updateCnt(); };
+$("#startBtn").onclick = start;
+$("#againBtn").onclick = ()=>{ start(); toast("새로운 문제를 뽑았습니다."); };
+$("#reviewBtn").onclick = e=>{ e.stopPropagation(); if(lastGrade) startReview(lastGrade.rows.filter(r=>!r.ok).map(r=>r.it)); };
+$("#rvAgainBtn").onclick = e=>{ e.stopPropagation(); startReview(reviewLeft); };
+$("#rvBackBtn").onclick = e=>{ e.stopPropagation(); mode="main"; $("#review").style.display="none"; $("#result").style.display="block"; window.scrollTo(0,0); };
+$("#rvNewBtn").onclick = e=>{ e.stopPropagation(); start(); toast("새로운 문제를 뽑았습니다."); };
+$("#rankRefresh").onclick = e=>{ e.stopPropagation(); loadRank(); };
+if(FIXED) $("#homeBtn").style.display = "none";
+$("#homeBtn").onclick = ()=>{ $("#result").style.display="none"; $("#quiz").style.display="none"; $("#setup").style.display="flex"; window.scrollTo(0,0); };
+$("#backBtn").onclick = e=>{ e.stopPropagation(); if(confirm("시험을 그만두고 범위 선택으로 돌아갈까요?")){ waitingNext=false; $("#quiz").style.display="none"; $("#setup").style.display="flex"; } };
+$("#submitBtn").onclick = submit;
+$("#name").addEventListener("keydown", e=>{ if(e.key==="Enter") start(); });
+$("#nick").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#name").focus(); });
+
+try{ const n = localStorage.getItem(NAME_KEY); if(n) $("#name").value = n;
+     const k = localStorage.getItem(NICK_KEY); if(k) $("#nick").value = k; }catch(e){}
+applyParams();
+drawAreas(); drawLevels(); drawCounts(); updateCnt();
+</script>
+</body>
+</html>
